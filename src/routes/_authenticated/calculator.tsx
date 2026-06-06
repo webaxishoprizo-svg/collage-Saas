@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { totals, useDB, useHydrated, formatINR } from "@/lib/store";
+import { totals, useDB, formatINR } from "@/lib/store";
 import { Plus, Minus, Calendar } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/calculator")({
+export const Route = createFileRoute("/_authenticated/calculator")({
   head: () => ({ meta: [{ title: "Calculator — PWMS" }] }),
   component: CalcPage,
 });
@@ -13,8 +13,7 @@ const KEYS = ["7","8","9","C","4","5","6","+","1","2","3","-","0","00",".","="];
 
 function CalcPage() {
   const db = useDB();
-  const hydrated = useHydrated();
-  const t = hydrated ? totals(db) : { income: 0, expense: 0, profit: 0 };
+  const t = totals(db);
   const [expr, setExpr] = useState("");
   const [display, setDisplay] = useState("0");
 

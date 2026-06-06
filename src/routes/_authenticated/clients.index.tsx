@@ -1,19 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { clientTotals, useDB, useHydrated, formatINR } from "@/lib/store";
+import { clientTotals, useDB, formatINR } from "@/lib/store";
 import { Plus, Search } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/clients/")({
+export const Route = createFileRoute("/_authenticated/clients/")({
   head: () => ({ meta: [{ title: "Clients — PWMS" }] }),
   component: ClientsPage,
 });
 
 function ClientsPage() {
   const db = useDB();
-  const hydrated = useHydrated();
   const [q, setQ] = useState("");
-  const list = (hydrated ? db.clients : []).filter((c) => c.name.toLowerCase().includes(q.toLowerCase()));
+  const list = db.clients.filter((c) => c.name.toLowerCase().includes(q.toLowerCase()));
 
   return (
     <AppShell title="Clients" action={
@@ -28,7 +27,7 @@ function ClientsPage() {
 
       <div className="space-y-3">
         {list.map((c) => {
-          const t = hydrated ? clientTotals(db, c.id) : { paid: 0, pending: 0, total: 0 };
+          const t = clientTotals(db, c.id);
           return (
             <Link key={c.id} to="/clients/$id" params={{ id: c.id }} className="block bg-card border border-border rounded-xl p-3">
               <div className="flex items-center justify-between">

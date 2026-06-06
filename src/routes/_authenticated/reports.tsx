@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { totals, useDB, useHydrated, formatINR } from "@/lib/store";
+import { totals, useDB, formatINR } from "@/lib/store";
 
-export const Route = createFileRoute("/reports")({
+export const Route = createFileRoute("/_authenticated/reports")({
   head: () => ({ meta: [{ title: "Reports — PWMS" }] }),
   component: Reports,
 });
@@ -11,18 +11,14 @@ const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov
 
 function Reports() {
   const db = useDB();
-  const hydrated = useHydrated();
-  const t = hydrated ? totals(db) : { income: 0, expense: 0, profit: 0 };
+  const t = totals(db);
 
-  // monthly aggregation
   const monthly: Record<string, { income: number; expense: number }> = {};
-  if (hydrated) {
-    db.transactions.forEach((tx) => {
-      const m = MONTHS[new Date(tx.date).getMonth()];
-      monthly[m] ??= { income: 0, expense: 0 };
-      monthly[m][tx.type === "income" ? "income" : "expense"] += tx.amount;
-    });
-  }
+  db.transactions.forEach((tx) => {
+    const m = MONTHS[new Date(tx.date).getMonth()];
+    monthly[m] ??= { income: 0, expense: 0 };
+    monthly[m][tx.type === "income" ? "income" : "expense"] += tx.amount;
+  });
   const rows = MONTHS.filter((m) => monthly[m]).map((m) => ({
     m, ...monthly[m], profit: monthly[m].income - monthly[m].expense,
   }));
