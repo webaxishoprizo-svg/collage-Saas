@@ -66,9 +66,18 @@ function AddWork() {
           </select>
         </Field>
         <Field label="Work Site">
-          <select value={site} onChange={(e) => setSite(e.target.value)} className="input">
-            <option>Site A</option><option>Site B</option><option>Site C</option>
-          </select>
+          <input
+            value={site}
+            onChange={(e) => setSite(e.target.value)}
+            list="client-sites"
+            className="input"
+            placeholder="Type site / place or pick a client site"
+          />
+          <datalist id="client-sites">
+            {Array.from(new Set(db.clients.map((c) => c.site).filter(Boolean))).map((s) => (
+              <option key={s} value={s} />
+            ))}
+          </datalist>
         </Field>
         <Field label="Daily Wages (₹)">
           <input value={wages} onChange={(e) => setWages(e.target.value)} inputMode="numeric" className="input" />
