@@ -1,6 +1,8 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { Users, Calculator, LayoutDashboard, UserCircle2, FileBarChart2, ArrowLeft } from "lucide-react";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { Users, Calculator, LayoutDashboard, UserCircle2, FileBarChart2, ArrowLeft, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const tabs = [
   { to: "/", label: "Workers", icon: Users },
@@ -16,14 +18,26 @@ export function AppShell({
   back,
   action,
   hideNav,
+  showSignOut,
 }: {
   title: string;
   children: ReactNode;
   back?: string;
   action?: ReactNode;
   hideNav?: boolean;
+  showSignOut?: boolean;
 }) {
   const { pathname } = useLocation();
+  const nav = useNavigate();
+  const qc = useQueryClient();
+
+  async function onSignOut() {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    nav({ to: "/auth", replace: true });
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col mx-auto max-w-[480px] border-x border-border">
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
@@ -34,6 +48,11 @@ export function AppShell({
         ) : null}
         <h1 className="text-lg font-semibold tracking-tight flex-1">{title}</h1>
         {action}
+        {showSignOut && (
+          <button onClick={onSignOut} aria-label="Sign out" className="p-1.5 rounded-md hover:bg-accent text-muted-foreground">
+            <LogOut className="h-5 w-5" />
+          </button>
+        )}
       </header>
       <main className={`flex-1 px-4 py-4 ${hideNav ? "pb-6" : "pb-24"}`}>{children}</main>
       {!hideNav && (
