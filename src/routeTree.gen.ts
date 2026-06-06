@@ -9,38 +9,200 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TransactionsRouteImport } from './routes/transactions'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CalculatorRouteImport } from './routes/calculator'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ClientsIndexRouteImport } from './routes/clients.index'
+import { Route as WorkersAddRouteImport } from './routes/workers.add'
+import { Route as WorkAddRouteImport } from './routes/work.add'
+import { Route as PaymentsAddRouteImport } from './routes/payments.add'
+import { Route as ClientsAddRouteImport } from './routes/clients.add'
+import { Route as ClientsIdRouteImport } from './routes/clients.$id'
 
+const TransactionsRoute = TransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalculatorRoute = CalculatorRouteImport.update({
+  id: '/calculator',
+  path: '/calculator',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClientsIndexRoute = ClientsIndexRouteImport.update({
+  id: '/clients/',
+  path: '/clients/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkersAddRoute = WorkersAddRouteImport.update({
+  id: '/workers/add',
+  path: '/workers/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkAddRoute = WorkAddRouteImport.update({
+  id: '/work/add',
+  path: '/work/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentsAddRoute = PaymentsAddRouteImport.update({
+  id: '/payments/add',
+  path: '/payments/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientsAddRoute = ClientsAddRouteImport.update({
+  id: '/clients/add',
+  path: '/clients/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientsIdRoute = ClientsIdRouteImport.update({
+  id: '/clients/$id',
+  path: '/clients/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calculator': typeof CalculatorRoute
+  '/dashboard': typeof DashboardRoute
+  '/reports': typeof ReportsRoute
+  '/transactions': typeof TransactionsRoute
+  '/clients/$id': typeof ClientsIdRoute
+  '/clients/add': typeof ClientsAddRoute
+  '/payments/add': typeof PaymentsAddRoute
+  '/work/add': typeof WorkAddRoute
+  '/workers/add': typeof WorkersAddRoute
+  '/clients/': typeof ClientsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calculator': typeof CalculatorRoute
+  '/dashboard': typeof DashboardRoute
+  '/reports': typeof ReportsRoute
+  '/transactions': typeof TransactionsRoute
+  '/clients/$id': typeof ClientsIdRoute
+  '/clients/add': typeof ClientsAddRoute
+  '/payments/add': typeof PaymentsAddRoute
+  '/work/add': typeof WorkAddRoute
+  '/workers/add': typeof WorkersAddRoute
+  '/clients': typeof ClientsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calculator': typeof CalculatorRoute
+  '/dashboard': typeof DashboardRoute
+  '/reports': typeof ReportsRoute
+  '/transactions': typeof TransactionsRoute
+  '/clients/$id': typeof ClientsIdRoute
+  '/clients/add': typeof ClientsAddRoute
+  '/payments/add': typeof PaymentsAddRoute
+  '/work/add': typeof WorkAddRoute
+  '/workers/add': typeof WorkersAddRoute
+  '/clients/': typeof ClientsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/calculator'
+    | '/dashboard'
+    | '/reports'
+    | '/transactions'
+    | '/clients/$id'
+    | '/clients/add'
+    | '/payments/add'
+    | '/work/add'
+    | '/workers/add'
+    | '/clients/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/calculator'
+    | '/dashboard'
+    | '/reports'
+    | '/transactions'
+    | '/clients/$id'
+    | '/clients/add'
+    | '/payments/add'
+    | '/work/add'
+    | '/workers/add'
+    | '/clients'
+  id:
+    | '__root__'
+    | '/'
+    | '/calculator'
+    | '/dashboard'
+    | '/reports'
+    | '/transactions'
+    | '/clients/$id'
+    | '/clients/add'
+    | '/payments/add'
+    | '/work/add'
+    | '/workers/add'
+    | '/clients/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalculatorRoute: typeof CalculatorRoute
+  DashboardRoute: typeof DashboardRoute
+  ReportsRoute: typeof ReportsRoute
+  TransactionsRoute: typeof TransactionsRoute
+  ClientsIdRoute: typeof ClientsIdRoute
+  ClientsAddRoute: typeof ClientsAddRoute
+  PaymentsAddRoute: typeof PaymentsAddRoute
+  WorkAddRoute: typeof WorkAddRoute
+  WorkersAddRoute: typeof WorkersAddRoute
+  ClientsIndexRoute: typeof ClientsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/transactions': {
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calculator': {
+      id: '/calculator'
+      path: '/calculator'
+      fullPath: '/calculator'
+      preLoaderRoute: typeof CalculatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +210,64 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/clients/': {
+      id: '/clients/'
+      path: '/clients'
+      fullPath: '/clients/'
+      preLoaderRoute: typeof ClientsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workers/add': {
+      id: '/workers/add'
+      path: '/workers/add'
+      fullPath: '/workers/add'
+      preLoaderRoute: typeof WorkersAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/work/add': {
+      id: '/work/add'
+      path: '/work/add'
+      fullPath: '/work/add'
+      preLoaderRoute: typeof WorkAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments/add': {
+      id: '/payments/add'
+      path: '/payments/add'
+      fullPath: '/payments/add'
+      preLoaderRoute: typeof PaymentsAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clients/add': {
+      id: '/clients/add'
+      path: '/clients/add'
+      fullPath: '/clients/add'
+      preLoaderRoute: typeof ClientsAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clients/$id': {
+      id: '/clients/$id'
+      path: '/clients/$id'
+      fullPath: '/clients/$id'
+      preLoaderRoute: typeof ClientsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalculatorRoute: CalculatorRoute,
+  DashboardRoute: DashboardRoute,
+  ReportsRoute: ReportsRoute,
+  TransactionsRoute: TransactionsRoute,
+  ClientsIdRoute: ClientsIdRoute,
+  ClientsAddRoute: ClientsAddRoute,
+  PaymentsAddRoute: PaymentsAddRoute,
+  WorkAddRoute: WorkAddRoute,
+  WorkersAddRoute: WorkersAddRoute,
+  ClientsIndexRoute: ClientsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
