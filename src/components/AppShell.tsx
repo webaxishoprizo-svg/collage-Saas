@@ -1,8 +1,10 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Users, Calculator, LayoutDashboard, UserCircle2, FileBarChart2, ArrowLeft, LogOut } from "lucide-react";
+import { Users, Calculator, LayoutDashboard, UserCircle2, FileBarChart2, ArrowLeft, LogOut, Wifi, WifiOff, RefreshCw } from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSyncStatus } from "@/lib/store";
+import { syncNow } from "@/lib/sync";
 
 const tabs = [
   { to: "/", label: "Workers", icon: Users },
@@ -30,6 +32,7 @@ export function AppShell({
   const { pathname } = useLocation();
   const nav = useNavigate();
   const qc = useQueryClient();
+  const sync = useSyncStatus();
 
   async function onSignOut() {
     await qc.cancelQueries();
@@ -46,7 +49,34 @@ export function AppShell({
             <ArrowLeft className="h-5 w-5" />
           </Link>
         ) : null}
-        <h1 className="text-lg font-semibold tracking-tight flex-1">{title}</h1>
+        <h1 className="text-lg font-semibold tracking-tight flex-1 truncate">{title}</h1>
+        <button
+          onClick={() => void syncNow()}
+          aria-label={sync.online ? "Online — tap to sync" : "Offline"}
+          title={
+            sync.online
+              ? sync.pendingCount > 0
+                ? `${sync.pendingCount} pending — tap to sync`
+                : "Online"
+              : `Offline${sync.pendingCount ? ` — ${sync.pendingCount} pending` : ""}`
+          }
+          className={`relative p-1.5 rounded-md hover:bg-accent ${
+            sync.online ? "text-primary" : "text-muted-foreground"
+          }`}
+        >
+          {sync.syncing ? (
+            <RefreshCw className="h-4 w-4 animate-spin" />
+          ) : sync.online ? (
+            <Wifi className="h-4 w-4" />
+          ) : (
+            <WifiOff className="h-4 w-4" />
+          )}
+          {sync.pendingCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-1 rounded-full bg-foreground text-background text-[9px] font-bold leading-[14px] text-center">
+              {sync.pendingCount > 9 ? "9+" : sync.pendingCount}
+            </span>
+          )}
+        </button>
         {action}
         {showSignOut && (
           <button onClick={onSignOut} aria-label="Sign out" className="p-1.5 rounded-md hover:bg-accent text-muted-foreground">
