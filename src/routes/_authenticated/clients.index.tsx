@@ -28,7 +28,7 @@ function ClientsPage() {
 
       <div className="space-y-3">
         {list.map((c) => {
-          const t = hydrated ? clientTotals(db, c.id) : { paid: 0, pending: 0, total: 0 };
+          const t = clientTotals(db, c.id);
           return (
             <Link key={c.id} to="/clients/$id" params={{ id: c.id }} className="block bg-card border border-border rounded-xl p-3">
               <div className="flex items-center justify-between">
