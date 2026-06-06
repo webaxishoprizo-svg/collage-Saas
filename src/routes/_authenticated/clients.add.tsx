@@ -15,7 +15,7 @@ function AddClient() {
   const invalidate = useInvalidateDB();
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
-  const [site, setSite] = useState("Site A");
+  const [site, setSite] = useState("");
   const [total, setTotal] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -39,10 +39,8 @@ function AddClient() {
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Client Name"><input value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="Enter client name" /></Field>
         <Field label="Mobile Number"><input value={mobile} onChange={(e) => setMobile(e.target.value)} inputMode="numeric" className="input" placeholder="Enter mobile number" /></Field>
-        <Field label="Site">
-          <select value={site} onChange={(e) => setSite(e.target.value)} className="input">
-            <option>Site A</option><option>Site B</option><option>Site C</option>
-          </select>
+        <Field label="Site / Place">
+          <input value={site} onChange={(e) => setSite(e.target.value)} className="input" placeholder="e.g. Anna Nagar, Chennai" />
         </Field>
         <Field label="Total Project (₹)"><input value={total} onChange={(e) => setTotal(e.target.value)} inputMode="numeric" className="input" placeholder="0" /></Field>
         <button disabled={busy} className="w-full bg-primary text-primary-foreground rounded-lg py-3 font-medium flex items-center justify-center gap-2 disabled:opacity-50">
