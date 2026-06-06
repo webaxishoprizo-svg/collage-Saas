@@ -1,5 +1,19 @@
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useLiveQuery } from "dexie-react-hooks";
+import { useSyncExternalStore } from "react";
+import {
+  localDB,
+  newId,
+  nowIso,
+  type LocalWorker,
+  type LocalClient,
+  type LocalWorkEntry,
+  type LocalPayment,
+  type LocalTransaction,
+} from "./local-db";
 import { supabase } from "@/integrations/supabase/client";
+import { subscribeSync, getSyncState, syncNow } from "./sync";
+
+// ---- Public types (camelCase) used by UI components ----
 
 export type Worker = {
   id: string;
@@ -52,126 +66,220 @@ export type DB = {
 
 const EMPTY: DB = { workers: [], work: [], clients: [], payments: [], transactions: [] };
 
-async function fetchDB(): Promise<DB> {
-  const { data: u } = await supabase.auth.getUser();
-  if (!u.user) return EMPTY;
+// ---- Reads: live local-first via Dexie ----
 
-  const [workersR, workR, clientsR, paymentsR, txR] = await Promise.all([
-    supabase.from("workers").select("*").order("created_at", { ascending: false }),
-    supabase.from("work_entries").select("*").order("date", { ascending: false }),
-    supabase.from("clients").select("*").order("created_at", { ascending: false }),
-    supabase.from("payments").select("*").order("date", { ascending: false }),
-    supabase.from("transactions").select("*").order("date", { ascending: false }),
-  ]);
+export function useDB(): DB {
+  const data = useLiveQuery(async () => {
+    const [workers, work, clients, payments, transactions] = await Promise.all([
+      localDB.workers.orderBy("updated_at").reverse().toArray(),
+      localDB.work_entries.orderBy("date").reverse().toArray(),
+      localDB.clients.orderBy("updated_at").reverse().toArray(),
+      localDB.payments.orderBy("date").reverse().toArray(),
+      localDB.transactions.orderBy("date").reverse().toArray(),
+    ]);
+    return mapAll({ workers, work, clients, payments, transactions });
+  }, []);
+  return data ?? EMPTY;
+}
 
+function mapAll(raw: {
+  workers: LocalWorker[];
+  work: LocalWorkEntry[];
+  clients: LocalClient[];
+  payments: LocalPayment[];
+  transactions: LocalTransaction[];
+}): DB {
   return {
-    workers: (workersR.data ?? []).map((w) => ({
-      id: w.id, name: w.name, mobile: w.mobile ?? "", photo: w.photo,
+    workers: raw.workers.map((w) => ({
+      id: w.id, name: w.name, mobile: w.mobile, photo: w.photo,
     })),
-    work: (workR.data ?? []).map((e) => ({
-      id: e.id, workerId: e.worker_id, date: e.date, site: e.site ?? "",
-      wages: Number(e.wages), status: e.status as "worked" | "absent",
+    work: raw.work.map((e) => ({
+      id: e.id, workerId: e.worker_id, date: e.date, site: e.site,
+      wages: Number(e.wages), status: e.status,
     })),
-    clients: (clientsR.data ?? []).map((c) => ({
-      id: c.id, name: c.name, mobile: c.mobile ?? "", site: c.site ?? "",
+    clients: raw.clients.map((c) => ({
+      id: c.id, name: c.name, mobile: c.mobile, site: c.site,
       totalProject: Number(c.total_project),
     })),
-    payments: (paymentsR.data ?? []).map((p) => ({
+    payments: raw.payments.map((p) => ({
       id: p.id, clientId: p.client_id, date: p.date, amount: Number(p.amount),
       mode: p.mode as Payment["mode"], note: p.note,
     })),
-    transactions: (txR.data ?? []).map((t) => ({
-      id: t.id, type: t.type as "income" | "expense", date: t.date,
+    transactions: raw.transactions.map((t) => ({
+      id: t.id, type: t.type, date: t.date,
       amount: Number(t.amount), label: t.label,
     })),
   };
 }
 
-const DB_KEY = ["db"] as const;
-
-export function useDB(): DB {
-  const { data } = useQuery({ queryKey: DB_KEY, queryFn: fetchDB, staleTime: 5_000 });
-  return data ?? EMPTY;
-}
-
-export function useDBStatus() {
-  return useQuery({ queryKey: DB_KEY, queryFn: fetchDB, staleTime: 5_000 });
-}
-
-// Backwards-compat shim — data hydration is now handled by react-query.
+// Backwards-compat shim: react-query is gone here, but old callers still ask.
 export function useHydrated() {
-  const { isSuccess } = useQuery({ queryKey: DB_KEY, queryFn: fetchDB, staleTime: 5_000 });
-  return isSuccess;
+  const data = useLiveQuery(() => localDB.meta.get("lastPull"), []);
+  return data !== undefined;
 }
 
-async function currentUserId() {
+// ---- Sync state hook for header indicator ----
+
+export function useSyncStatus() {
+  return useSyncExternalStore(
+    (cb) => subscribeSync(cb),
+    () => getSyncState(),
+    () => getSyncState(),
+  );
+}
+
+// ---- Writes: local-first, then enqueue for Supabase ----
+
+async function currentUserId(): Promise<string> {
   const { data } = await supabase.auth.getUser();
-  if (!data.user) throw new Error("Not signed in");
-  return data.user.id;
+  if (data.user) return data.user.id;
+  // Fallback for offline: read from cached session.
+  const { data: s } = await supabase.auth.getSession();
+  if (s.session?.user?.id) return s.session.user.id;
+  throw new Error("Not signed in");
+}
+
+async function enqueue(
+  table: "workers" | "clients" | "work_entries" | "payments" | "transactions",
+  payload: Record<string, unknown>,
+  user_id: string,
+) {
+  await localDB.outbox.add({
+    user_id,
+    table,
+    op: "insert",
+    payload,
+    created_at: nowIso(),
+    attempts: 0,
+    last_error: null,
+  });
 }
 
 export const actions = {
   async addWorker(w: Omit<Worker, "id">) {
     const user_id = await currentUserId();
-    const { error } = await supabase.from("workers").insert({
-      user_id, name: w.name, mobile: w.mobile, photo: w.photo ?? null,
-    });
-    if (error) throw error;
+    const row: LocalWorker = {
+      id: newId(),
+      user_id,
+      name: w.name,
+      mobile: w.mobile ?? "",
+      photo: w.photo ?? null,
+      created_at: nowIso(),
+      updated_at: nowIso(),
+      _dirty: 1,
+    };
+    await localDB.workers.put(row);
+    await enqueue("workers", { ...stripDirty(row) }, user_id);
+    void syncNow();
   },
+
   async addWork(e: Omit<WorkEntry, "id">) {
     const user_id = await currentUserId();
-    const { error } = await supabase.from("work_entries").insert({
-      user_id, worker_id: e.workerId, date: e.date, site: e.site,
-      wages: e.wages, status: e.status,
-    });
-    if (error) throw error;
+    const row: LocalWorkEntry = {
+      id: newId(),
+      user_id,
+      worker_id: e.workerId,
+      date: e.date,
+      site: e.site,
+      wages: e.wages,
+      status: e.status,
+      created_at: nowIso(),
+      _dirty: 1,
+    };
+    await localDB.work_entries.put(row);
+    await enqueue("work_entries", { ...stripDirty(row) }, user_id);
 
     if (e.status === "worked" && e.wages > 0) {
-      const { data: worker } = await supabase.from("workers").select("name").eq("id", e.workerId).maybeSingle();
-      await supabase.from("transactions").insert({
-        user_id, type: "expense", date: e.date, amount: e.wages,
+      const worker = await localDB.workers.get(e.workerId);
+      const tx: LocalTransaction = {
+        id: newId(),
+        user_id,
+        type: "expense",
+        date: e.date,
+        amount: e.wages,
         label: `${worker?.name ?? "Worker"} (Wages)`,
-      });
+        created_at: nowIso(),
+        _dirty: 1,
+      };
+      await localDB.transactions.put(tx);
+      await enqueue("transactions", { ...stripDirty(tx) }, user_id);
     }
+    void syncNow();
   },
+
   async addClient(c: Omit<Client, "id">) {
     const user_id = await currentUserId();
-    const { error } = await supabase.from("clients").insert({
-      user_id, name: c.name, mobile: c.mobile, site: c.site, total_project: c.totalProject,
-    });
-    if (error) throw error;
+    const row: LocalClient = {
+      id: newId(),
+      user_id,
+      name: c.name,
+      mobile: c.mobile ?? "",
+      site: c.site ?? "",
+      total_project: c.totalProject ?? 0,
+      created_at: nowIso(),
+      updated_at: nowIso(),
+      _dirty: 1,
+    };
+    await localDB.clients.put(row);
+    await enqueue("clients", { ...stripDirty(row) }, user_id);
+    void syncNow();
   },
+
   async addPayment(p: Omit<Payment, "id">) {
     const user_id = await currentUserId();
-    const { error } = await supabase.from("payments").insert({
-      user_id, client_id: p.clientId, date: p.date, amount: p.amount,
-      mode: p.mode, note: p.note ?? null,
-    });
-    if (error) throw error;
+    const row: LocalPayment = {
+      id: newId(),
+      user_id,
+      client_id: p.clientId,
+      date: p.date,
+      amount: p.amount,
+      mode: p.mode,
+      note: p.note ?? null,
+      created_at: nowIso(),
+      _dirty: 1,
+    };
+    await localDB.payments.put(row);
+    await enqueue("payments", { ...stripDirty(row) }, user_id);
 
-    const { data: client } = await supabase.from("clients").select("name").eq("id", p.clientId).maybeSingle();
-    await supabase.from("transactions").insert({
-      user_id, type: "income", date: p.date, amount: p.amount,
+    const client = await localDB.clients.get(p.clientId);
+    const tx: LocalTransaction = {
+      id: newId(),
+      user_id,
+      type: "income",
+      date: p.date,
+      amount: p.amount,
       label: `${client?.name ?? "Client"} Payment`,
-    });
+      created_at: nowIso(),
+      _dirty: 1,
+    };
+    await localDB.transactions.put(tx);
+    await enqueue("transactions", { ...stripDirty(tx) }, user_id);
+    void syncNow();
   },
 };
 
-export function useInvalidateDB() {
-  const qc = useQueryClient();
-  return () => qc.invalidateQueries({ queryKey: DB_KEY });
+function stripDirty<T extends { _dirty?: 0 | 1 }>(row: T): Omit<T, "_dirty"> {
+  const { _dirty: _, ...rest } = row;
+  return rest;
 }
 
-/** Wrap an async action so it invalidates the cached DB on success. */
+// ---- Compatibility shims for the old react-query store ----
+
+export function useInvalidateDB() {
+  return () => void syncNow();
+}
+
 export function useAction<TArgs extends unknown[], TResult>(
   fn: (...args: TArgs) => Promise<TResult>,
 ) {
-  const invalidate = useInvalidateDB();
-  return useMutation({
-    mutationFn: (args: TArgs) => fn(...args),
-    onSuccess: () => invalidate(),
-  });
+  // Kept for backwards-compat. New code can just `await actions.x()` directly.
+  return {
+    mutateAsync: (args: TArgs) => fn(...args),
+    isPending: false,
+  };
 }
+
+// ---- Derived helpers ----
 
 export function totals(db: DB) {
   const income = db.transactions.filter((t) => t.type === "income").reduce((a, b) => a + b.amount, 0);
