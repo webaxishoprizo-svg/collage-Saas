@@ -16,7 +16,7 @@ function AddWork() {
   const invalidate = useInvalidateDB();
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [workerId, setWorkerId] = useState("");
-  const [site, setSite] = useState("Site A");
+  const [site, setSite] = useState("");
   const [wages, setWages] = useState("800");
   const [status, setStatus] = useState<"worked" | "absent">("worked");
   const [busy, setBusy] = useState(false);
