@@ -14,7 +14,208 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clients: {
+        Row: {
+          created_at: string
+          id: string
+          mobile: string
+          name: string
+          site: string
+          total_project: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mobile?: string
+          name: string
+          site?: string
+          total_project?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mobile?: string
+          name?: string
+          site?: string
+          total_project?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          date: string
+          id: string
+          mode: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          client_id: string
+          created_at?: string
+          date: string
+          id?: string
+          mode: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          mode?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          business_name: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          business_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          business_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          id: string
+          label: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          date: string
+          id?: string
+          label: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          id?: string
+          label?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      work_entries: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          site: string
+          status: string
+          user_id: string
+          wages: number
+          worker_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          site?: string
+          status: string
+          user_id: string
+          wages?: number
+          worker_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          site?: string
+          status?: string
+          user_id?: string
+          wages?: number
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_entries_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workers: {
+        Row: {
+          created_at: string
+          id: string
+          mobile: string
+          name: string
+          photo: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mobile?: string
+          name: string
+          photo?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mobile?: string
+          name?: string
+          photo?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
