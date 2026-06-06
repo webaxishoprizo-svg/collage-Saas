@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as CalculatorRouteImport } from './routes/calculator'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkersAddRouteImport } from './routes/workers.add'
 import { Route as WorkAddRouteImport } from './routes/work.add'
 
+const TransactionsRoute = TransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CalculatorRoute = CalculatorRouteImport.update({
   id: '/calculator',
   path: '/calculator',
@@ -38,12 +44,14 @@ const WorkAddRoute = WorkAddRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/calculator': typeof CalculatorRoute
+  '/transactions': typeof TransactionsRoute
   '/work/add': typeof WorkAddRoute
   '/workers/add': typeof WorkersAddRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calculator': typeof CalculatorRoute
+  '/transactions': typeof TransactionsRoute
   '/work/add': typeof WorkAddRoute
   '/workers/add': typeof WorkersAddRoute
 }
@@ -51,26 +59,46 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/calculator': typeof CalculatorRoute
+  '/transactions': typeof TransactionsRoute
   '/work/add': typeof WorkAddRoute
   '/workers/add': typeof WorkersAddRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/calculator' | '/work/add' | '/workers/add'
+  fullPaths:
+    | '/'
+    | '/calculator'
+    | '/transactions'
+    | '/work/add'
+    | '/workers/add'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/calculator' | '/work/add' | '/workers/add'
-  id: '__root__' | '/' | '/calculator' | '/work/add' | '/workers/add'
+  to: '/' | '/calculator' | '/transactions' | '/work/add' | '/workers/add'
+  id:
+    | '__root__'
+    | '/'
+    | '/calculator'
+    | '/transactions'
+    | '/work/add'
+    | '/workers/add'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CalculatorRoute: typeof CalculatorRoute
+  TransactionsRoute: typeof TransactionsRoute
   WorkAddRoute: typeof WorkAddRoute
   WorkersAddRoute: typeof WorkersAddRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/transactions': {
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/calculator': {
       id: '/calculator'
       path: '/calculator'
@@ -105,6 +133,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CalculatorRoute: CalculatorRoute,
+  TransactionsRoute: TransactionsRoute,
   WorkAddRoute: WorkAddRoute,
   WorkersAddRoute: WorkersAddRoute,
 }
