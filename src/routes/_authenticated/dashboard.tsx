@@ -3,7 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { totals, useDB, useHydrated, formatINR } from "@/lib/store";
 import { Bell } from "lucide-react";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — PWMS" }] }),
   component: Dashboard,
 });

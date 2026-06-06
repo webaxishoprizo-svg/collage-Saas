@@ -4,7 +4,7 @@ import { actions } from "@/lib/store";
 import { Camera } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/workers/add")({
+export const Route = createFileRoute("/_authenticated/workers/add")({
   head: () => ({ meta: [{ title: "Add Worker — PWMS" }] }),
   component: AddWorker,
 });

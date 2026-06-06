@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const search = z.object({ clientId: z.string().optional() });
 
-export const Route = createFileRoute("/payments/add")({
+export const Route = createFileRoute("/_authenticated/payments/add")({
   head: () => ({ meta: [{ title: "Add Payment — PWMS" }] }),
   validateSearch: search,
   component: AddPayment,

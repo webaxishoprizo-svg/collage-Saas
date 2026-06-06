@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { totals, useDB, useHydrated, formatINR } from "@/lib/store";
 
-export const Route = createFileRoute("/reports")({
+export const Route = createFileRoute("/_authenticated/reports")({
   head: () => ({ meta: [{ title: "Reports — PWMS" }] }),
   component: Reports,
 });

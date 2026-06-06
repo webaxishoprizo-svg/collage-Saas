@@ -4,7 +4,7 @@ import { clientTotals, useDB, useHydrated, formatINR } from "@/lib/store";
 import { Plus, Search } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/clients/")({
+export const Route = createFileRoute("/_authenticated/clients/")({
   head: () => ({ meta: [{ title: "Clients — PWMS" }] }),
   component: ClientsPage,
 });

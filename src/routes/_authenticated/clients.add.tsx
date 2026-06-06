@@ -3,7 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { actions } from "@/lib/store";
 import { useState } from "react";
 
-export const Route = createFileRoute("/clients/add")({
+export const Route = createFileRoute("/_authenticated/clients/add")({
   head: () => ({ meta: [{ title: "Add Client — PWMS" }] }),
   component: AddClient,
 });

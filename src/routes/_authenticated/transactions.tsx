@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useDB, useHydrated, formatINR } from "@/lib/store";
 
-export const Route = createFileRoute("/transactions")({
+export const Route = createFileRoute("/_authenticated/transactions")({
   head: () => ({ meta: [{ title: "Transactions — PWMS" }] }),
   component: TxPage,
 });

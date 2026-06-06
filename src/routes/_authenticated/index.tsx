@@ -3,7 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { useDB, useHydrated, formatINR } from "@/lib/store";
 import { Plus, Filter, User } from "lucide-react";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Workers — PWMS" }] }),
   component: Workers,
 });

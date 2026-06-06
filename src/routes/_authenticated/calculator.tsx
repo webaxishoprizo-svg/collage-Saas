@@ -4,7 +4,7 @@ import { totals, useDB, useHydrated, formatINR } from "@/lib/store";
 import { Plus, Minus, Calendar } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/calculator")({
+export const Route = createFileRoute("/_authenticated/calculator")({
   head: () => ({ meta: [{ title: "Calculator — PWMS" }] }),
   component: CalcPage,
 });

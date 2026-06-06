@@ -3,7 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { clientTotals, useDB, useHydrated, formatINR } from "@/lib/store";
 import { Plus, User, MoreVertical } from "lucide-react";
 
-export const Route = createFileRoute("/clients/$id")({
+export const Route = createFileRoute("/_authenticated/clients/$id")({
   head: () => ({ meta: [{ title: "Client Details — PWMS" }] }),
   component: ClientDetails,
   errorComponent: ({ error }) => <div className="p-6">{error.message}</div>,

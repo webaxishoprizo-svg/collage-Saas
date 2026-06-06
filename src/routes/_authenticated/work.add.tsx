@@ -4,7 +4,7 @@ import { actions, dayName, useDB, useHydrated } from "@/lib/store";
 import { Calendar } from "lucide-react";
 import { useMemo, useState } from "react";
 
-export const Route = createFileRoute("/work/add")({
+export const Route = createFileRoute("/_authenticated/work/add")({
   head: () => ({ meta: [{ title: "Add Work Entry — PWMS" }] }),
   component: AddWork,
 });
