@@ -39,7 +39,7 @@ function AddWorker() {
           <input value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="Enter mobile number" inputMode="numeric" className="input" />
         </Field>
 
-        <button className="w-full bg-primary text-primary-foreground rounded-lg py-3 font-medium">Save Worker</button>
+        <button disabled={busy} className="w-full bg-primary text-primary-foreground rounded-lg py-3 font-medium flex items-center justify-center gap-2 disabled:opacity-50">{busy && <Loader2 className="h-4 w-4 animate-spin" />}Save Worker</button>
       </form>
       <style>{`.input{width:100%;border:1px solid var(--color-border);border-radius:0.5rem;padding:0.7rem 0.8rem;font-size:0.9rem;background:var(--color-background);}.input:focus{outline:2px solid var(--color-primary);outline-offset:-1px;}`}</style>
     </AppShell>
