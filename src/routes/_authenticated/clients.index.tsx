@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { clientTotals, useDB, useHydrated, formatINR } from "@/lib/store";
+import { clientTotals, useDB, formatINR } from "@/lib/store";
 import { Plus, Search } from "lucide-react";
 import { useState } from "react";
 
@@ -11,9 +11,8 @@ export const Route = createFileRoute("/_authenticated/clients/")({
 
 function ClientsPage() {
   const db = useDB();
-  const hydrated = useHydrated();
   const [q, setQ] = useState("");
-  const list = (hydrated ? db.clients : []).filter((c) => c.name.toLowerCase().includes(q.toLowerCase()));
+  const list = db.clients.filter((c) => c.name.toLowerCase().includes(q.toLowerCase()));
 
   return (
     <AppShell title="Clients" action={

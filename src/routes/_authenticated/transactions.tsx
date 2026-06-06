@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { useDB, useHydrated, formatINR } from "@/lib/store";
+import { useDB, formatINR } from "@/lib/store";
 
 export const Route = createFileRoute("/_authenticated/transactions")({
   head: () => ({ meta: [{ title: "Transactions — PWMS" }] }),
@@ -9,8 +9,7 @@ export const Route = createFileRoute("/_authenticated/transactions")({
 
 function TxPage() {
   const db = useDB();
-  const hydrated = useHydrated();
-  const items = hydrated ? db.transactions : [];
+  const items = db.transactions;
 
   return (
     <AppShell title="Transactions" back="/dashboard">
