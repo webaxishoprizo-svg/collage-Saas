@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkersAddRouteImport } from './routes/workers.add'
+import { Route as WorkAddRouteImport } from './routes/work.add'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,30 +23,39 @@ const WorkersAddRoute = WorkersAddRouteImport.update({
   path: '/workers/add',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkAddRoute = WorkAddRouteImport.update({
+  id: '/work/add',
+  path: '/work/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/work/add': typeof WorkAddRoute
   '/workers/add': typeof WorkersAddRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/work/add': typeof WorkAddRoute
   '/workers/add': typeof WorkersAddRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/work/add': typeof WorkAddRoute
   '/workers/add': typeof WorkersAddRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/workers/add'
+  fullPaths: '/' | '/work/add' | '/workers/add'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/workers/add'
-  id: '__root__' | '/' | '/workers/add'
+  to: '/' | '/work/add' | '/workers/add'
+  id: '__root__' | '/' | '/work/add' | '/workers/add'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  WorkAddRoute: typeof WorkAddRoute
   WorkersAddRoute: typeof WorkersAddRoute
 }
 
@@ -65,11 +75,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkersAddRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/work/add': {
+      id: '/work/add'
+      path: '/work/add'
+      fullPath: '/work/add'
+      preLoaderRoute: typeof WorkAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  WorkAddRoute: WorkAddRoute,
   WorkersAddRoute: WorkersAddRoute,
 }
 export const routeTree = rootRouteImport
