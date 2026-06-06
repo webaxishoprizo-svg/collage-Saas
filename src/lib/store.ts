@@ -264,8 +264,9 @@ export const actions = {
 };
 
 function stripDirty<T extends { _dirty?: 0 | 1 }>(row: T): Omit<T, "_dirty"> {
-  const { _dirty: _, ...rest } = row;
-  return rest;
+  const copy = { ...row };
+  delete copy._dirty;
+  return copy;
 }
 
 // ---- Compatibility shims for the old react-query store ----
