@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClientsIndexRouteImport } from './routes/clients.index'
 import { Route as WorkersAddRouteImport } from './routes/workers.add'
 import { Route as WorkAddRouteImport } from './routes/work.add'
+import { Route as ClientsAddRouteImport } from './routes/clients.add'
 import { Route as ClientsIdRouteImport } from './routes/clients.$id'
 
 const TransactionsRoute = TransactionsRouteImport.update({
@@ -53,6 +54,11 @@ const WorkAddRoute = WorkAddRouteImport.update({
   path: '/work/add',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClientsAddRoute = ClientsAddRouteImport.update({
+  id: '/clients/add',
+  path: '/clients/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClientsIdRoute = ClientsIdRouteImport.update({
   id: '/clients/$id',
   path: '/clients/$id',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/transactions': typeof TransactionsRoute
   '/clients/$id': typeof ClientsIdRoute
+  '/clients/add': typeof ClientsAddRoute
   '/work/add': typeof WorkAddRoute
   '/workers/add': typeof WorkersAddRoute
   '/clients/': typeof ClientsIndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/transactions': typeof TransactionsRoute
   '/clients/$id': typeof ClientsIdRoute
+  '/clients/add': typeof ClientsAddRoute
   '/work/add': typeof WorkAddRoute
   '/workers/add': typeof WorkersAddRoute
   '/clients': typeof ClientsIndexRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/transactions': typeof TransactionsRoute
   '/clients/$id': typeof ClientsIdRoute
+  '/clients/add': typeof ClientsAddRoute
   '/work/add': typeof WorkAddRoute
   '/workers/add': typeof WorkersAddRoute
   '/clients/': typeof ClientsIndexRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/transactions'
     | '/clients/$id'
+    | '/clients/add'
     | '/work/add'
     | '/workers/add'
     | '/clients/'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/transactions'
     | '/clients/$id'
+    | '/clients/add'
     | '/work/add'
     | '/workers/add'
     | '/clients'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/transactions'
     | '/clients/$id'
+    | '/clients/add'
     | '/work/add'
     | '/workers/add'
     | '/clients/'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   TransactionsRoute: typeof TransactionsRoute
   ClientsIdRoute: typeof ClientsIdRoute
+  ClientsAddRoute: typeof ClientsAddRoute
   WorkAddRoute: typeof WorkAddRoute
   WorkersAddRoute: typeof WorkersAddRoute
   ClientsIndexRoute: typeof ClientsIndexRoute
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkAddRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/clients/add': {
+      id: '/clients/add'
+      path: '/clients/add'
+      fullPath: '/clients/add'
+      preLoaderRoute: typeof ClientsAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/clients/$id': {
       id: '/clients/$id'
       path: '/clients/$id'
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   TransactionsRoute: TransactionsRoute,
   ClientsIdRoute: ClientsIdRoute,
+  ClientsAddRoute: ClientsAddRoute,
   WorkAddRoute: WorkAddRoute,
   WorkersAddRoute: WorkersAddRoute,
   ClientsIndexRoute: ClientsIndexRoute,
