@@ -124,10 +124,16 @@ function RootComponent() {
 
   useEffect(() => {
     // Lazy import keeps Supabase out of SSR bundle paths
-    import("@/integrations/supabase/client").then(({ supabase }) => {
+    Promise.all([
+      import("@/integrations/supabase/client"),
+      import("@/lib/sync"),
+    ]).then(([{ supabase }, sync]) => {
+      sync.startSyncEngine();
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
         router.invalidate();
+        if (event === "SIGNED_IN") void sync.bootstrapAfterSignIn();
+        if (event === "SIGNED_OUT") void sync.teardownAfterSignOut();
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       });
       return () => subscription.unsubscribe();
