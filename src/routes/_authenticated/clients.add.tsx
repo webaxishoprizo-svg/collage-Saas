@@ -15,7 +15,7 @@ function AddClient() {
   const invalidate = useInvalidateDB();
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
-  const [site, setSite] = useState("Site A");
+  const [site, setSite] = useState("");
   const [total, setTotal] = useState("");
   const [busy, setBusy] = useState(false);
 
