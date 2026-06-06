@@ -1,8 +1,10 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Users, Calculator, LayoutDashboard, UserCircle2, FileBarChart2, ArrowLeft, LogOut } from "lucide-react";
+import { Users, Calculator, LayoutDashboard, UserCircle2, FileBarChart2, ArrowLeft, LogOut, Wifi, WifiOff, RefreshCw } from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSyncStatus } from "@/lib/store";
+import { syncNow } from "@/lib/sync";
 
 const tabs = [
   { to: "/", label: "Workers", icon: Users },
