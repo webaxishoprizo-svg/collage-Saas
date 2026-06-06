@@ -107,9 +107,11 @@ export async function pullAll(userId: string) {
 async function pushOne(entry: OutboxEntry): Promise<void> {
   const { table, op, payload } = entry;
   if (op !== "insert") return;
-  // The discriminated union of insert payloads collapses on supabase-js when
-  // table is dynamic; cast through unknown for a typed insert per-table.
-  const { error } = await (supabase.from(table).insert as (p: unknown) => Promise<{ error: { code?: string; message: string } | null }>)(payload);
+  // Dynamic table name collapses the typed insert union; route through any.
+  const tbl = supabase.from(table) as unknown as {
+    insert: (p: unknown) => Promise<{ error: { code?: string; message: string } | null }>;
+  };
+  const { error } = await tbl.insert(payload);
   if (error) {
     // Unique-violation means the row already made it to the server on a prior
     // attempt — treat as success so we don't get stuck.
