@@ -1,16 +1,17 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Worker = {
   id: string;
   name: string;
   mobile: string;
-  photo?: string;
+  photo?: string | null;
 };
 
 export type WorkEntry = {
   id: string;
   workerId: string;
-  date: string; // ISO yyyy-mm-dd
+  date: string;
   site: string;
   wages: number;
   status: "worked" | "absent";
@@ -30,7 +31,7 @@ export type Payment = {
   date: string;
   amount: number;
   mode: "Cash" | "UPI" | "Bank Transfer" | "Cheque";
-  note?: string;
+  note?: string | null;
 };
 
 export type Transaction = {
@@ -41,7 +42,7 @@ export type Transaction = {
   label: string;
 };
 
-type DB = {
+export type DB = {
   workers: Worker[];
   work: WorkEntry[];
   clients: Client[];
@@ -49,144 +50,128 @@ type DB = {
   transactions: Transaction[];
 };
 
-const KEY = "pwms_db_v1";
+const EMPTY: DB = { workers: [], work: [], clients: [], payments: [], transactions: [] };
 
-const seed: DB = {
-  workers: [
-    { id: "w1", name: "Ravi Kumar", mobile: "9876543210" },
-    { id: "w2", name: "Suresh Patel", mobile: "9876543211" },
-    { id: "w3", name: "Mohit Singh", mobile: "9876543212" },
-    { id: "w4", name: "Deepak Yadav", mobile: "9876543213" },
-  ],
-  work: [
-    { id: "we1", workerId: "w1", date: today(), site: "Site A", wages: 800, status: "worked" },
-    { id: "we2", workerId: "w2", date: today(), site: "Site B", wages: 750, status: "worked" },
-    { id: "we3", workerId: "w3", date: today(), site: "Site A", wages: 700, status: "worked" },
-    { id: "we4", workerId: "w4", date: today(), site: "Site A", wages: 0, status: "absent" },
-  ],
-  clients: [
-    { id: "c1", name: "Client A", mobile: "9876543210", site: "Site A", totalProject: 60000 },
-    { id: "c2", name: "Client B", mobile: "9876543220", site: "Site B", totalProject: 35000 },
-    { id: "c3", name: "Client C", mobile: "9876543230", site: "Site C", totalProject: 20000 },
-  ],
-  payments: [
-    { id: "p1", clientId: "c1", date: "2024-05-28", amount: 10000, mode: "Cash" },
-    { id: "p2", clientId: "c1", date: "2024-05-20", amount: 20000, mode: "Bank Transfer" },
-    { id: "p3", clientId: "c1", date: "2024-05-10", amount: 20000, mode: "UPI" },
-    { id: "p4", clientId: "c2", date: "2024-05-27", amount: 30000, mode: "Cash" },
-    { id: "p5", clientId: "c3", date: "2024-05-15", amount: 20000, mode: "UPI" },
-  ],
-  transactions: [
-    { id: "t1", type: "income", date: "2024-05-28", amount: 10000, label: "Client A Payment" },
-    { id: "t2", type: "expense", date: "2024-05-28", amount: 800, label: "Ravi Kumar (Wages)" },
-    { id: "t3", type: "income", date: "2024-05-27", amount: 20000, label: "Client B Payment" },
-    { id: "t4", type: "expense", date: "2024-05-27", amount: 750, label: "Suresh Patel (Wages)" },
-    { id: "t5", type: "expense", date: "2024-05-27", amount: 700, label: "Mohit Singh (Wages)" },
-  ],
-};
+async function fetchDB(): Promise<DB> {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return EMPTY;
 
-function today() {
-  return new Date().toISOString().slice(0, 10);
+  const [workersR, workR, clientsR, paymentsR, txR] = await Promise.all([
+    supabase.from("workers").select("*").order("created_at", { ascending: false }),
+    supabase.from("work_entries").select("*").order("date", { ascending: false }),
+    supabase.from("clients").select("*").order("created_at", { ascending: false }),
+    supabase.from("payments").select("*").order("date", { ascending: false }),
+    supabase.from("transactions").select("*").order("date", { ascending: false }),
+  ]);
+
+  return {
+    workers: (workersR.data ?? []).map((w) => ({
+      id: w.id, name: w.name, mobile: w.mobile ?? "", photo: w.photo,
+    })),
+    work: (workR.data ?? []).map((e) => ({
+      id: e.id, workerId: e.worker_id, date: e.date, site: e.site ?? "",
+      wages: Number(e.wages), status: e.status as "worked" | "absent",
+    })),
+    clients: (clientsR.data ?? []).map((c) => ({
+      id: c.id, name: c.name, mobile: c.mobile ?? "", site: c.site ?? "",
+      totalProject: Number(c.total_project),
+    })),
+    payments: (paymentsR.data ?? []).map((p) => ({
+      id: p.id, clientId: p.client_id, date: p.date, amount: Number(p.amount),
+      mode: p.mode as Payment["mode"], note: p.note,
+    })),
+    transactions: (txR.data ?? []).map((t) => ({
+      id: t.id, type: t.type as "income" | "expense", date: t.date,
+      amount: Number(t.amount), label: t.label,
+    })),
+  };
 }
 
-const listeners = new Set<() => void>();
+const DB_KEY = ["db"] as const;
 
-function read(): DB {
-  if (typeof window === "undefined") return seed;
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) {
-      localStorage.setItem(KEY, JSON.stringify(seed));
-      return seed;
-    }
-    return JSON.parse(raw) as DB;
-  } catch {
-    return seed;
-  }
+export function useDB(): DB {
+  const { data } = useQuery({ queryKey: DB_KEY, queryFn: fetchDB, staleTime: 5_000 });
+  return data ?? EMPTY;
 }
 
-let cache: DB | null = null;
-
-function getSnapshot(): DB {
-  if (!cache) cache = read();
-  return cache;
+export function useDBStatus() {
+  return useQuery({ queryKey: DB_KEY, queryFn: fetchDB, staleTime: 5_000 });
 }
 
-function setDB(updater: (db: DB) => DB) {
-  const next = updater(getSnapshot());
-  cache = next;
-  if (typeof window !== "undefined") {
-    localStorage.setItem(KEY, JSON.stringify(next));
-  }
-  listeners.forEach((l) => l());
-}
-
-function subscribe(cb: () => void) {
-  listeners.add(cb);
-  return () => listeners.delete(cb);
-}
-
-export function useDB() {
-  const db = useSyncExternalStore(subscribe, getSnapshot, () => seed);
-  return db;
-}
-
+// Backwards-compat shim — data hydration is now handled by react-query.
 export function useHydrated() {
-  const [h, setH] = useState(false);
-  useEffect(() => setH(true), []);
-  return h;
+  const { isSuccess } = useQuery({ queryKey: DB_KEY, queryFn: fetchDB, staleTime: 5_000 });
+  return isSuccess;
 }
 
-const uid = () => Math.random().toString(36).slice(2, 10);
+async function currentUserId() {
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) throw new Error("Not signed in");
+  return data.user.id;
+}
 
 export const actions = {
-  addWorker(w: Omit<Worker, "id">) {
-    setDB((db) => ({ ...db, workers: [{ ...w, id: uid() }, ...db.workers] }));
+  async addWorker(w: Omit<Worker, "id">) {
+    const user_id = await currentUserId();
+    const { error } = await supabase.from("workers").insert({
+      user_id, name: w.name, mobile: w.mobile, photo: w.photo ?? null,
+    });
+    if (error) throw error;
   },
-  addWork(e: Omit<WorkEntry, "id">) {
-    const worker = getSnapshot().workers.find((w) => w.id === e.workerId);
-    setDB((db) => ({
-      ...db,
-      work: [{ ...e, id: uid() }, ...db.work],
-      transactions:
-        e.status === "worked" && e.wages > 0
-          ? [
-              {
-                id: uid(),
-                type: "expense",
-                date: e.date,
-                amount: e.wages,
-                label: `${worker?.name ?? "Worker"} (Wages)`,
-              },
-              ...db.transactions,
-            ]
-          : db.transactions,
-    }));
+  async addWork(e: Omit<WorkEntry, "id">) {
+    const user_id = await currentUserId();
+    const { error } = await supabase.from("work_entries").insert({
+      user_id, worker_id: e.workerId, date: e.date, site: e.site,
+      wages: e.wages, status: e.status,
+    });
+    if (error) throw error;
+
+    if (e.status === "worked" && e.wages > 0) {
+      const { data: worker } = await supabase.from("workers").select("name").eq("id", e.workerId).maybeSingle();
+      await supabase.from("transactions").insert({
+        user_id, type: "expense", date: e.date, amount: e.wages,
+        label: `${worker?.name ?? "Worker"} (Wages)`,
+      });
+    }
   },
-  addClient(c: Omit<Client, "id">) {
-    setDB((db) => ({ ...db, clients: [{ ...c, id: uid() }, ...db.clients] }));
+  async addClient(c: Omit<Client, "id">) {
+    const user_id = await currentUserId();
+    const { error } = await supabase.from("clients").insert({
+      user_id, name: c.name, mobile: c.mobile, site: c.site, total_project: c.totalProject,
+    });
+    if (error) throw error;
   },
-  addPayment(p: Omit<Payment, "id">) {
-    const client = getSnapshot().clients.find((c) => c.id === p.clientId);
-    setDB((db) => ({
-      ...db,
-      payments: [{ ...p, id: uid() }, ...db.payments],
-      transactions: [
-        {
-          id: uid(),
-          type: "income",
-          date: p.date,
-          amount: p.amount,
-          label: `${client?.name ?? "Client"} Payment`,
-        },
-        ...db.transactions,
-      ],
-    }));
-  },
-  addTransaction(t: Omit<Transaction, "id">) {
-    setDB((db) => ({ ...db, transactions: [{ ...t, id: uid() }, ...db.transactions] }));
+  async addPayment(p: Omit<Payment, "id">) {
+    const user_id = await currentUserId();
+    const { error } = await supabase.from("payments").insert({
+      user_id, client_id: p.clientId, date: p.date, amount: p.amount,
+      mode: p.mode, note: p.note ?? null,
+    });
+    if (error) throw error;
+
+    const { data: client } = await supabase.from("clients").select("name").eq("id", p.clientId).maybeSingle();
+    await supabase.from("transactions").insert({
+      user_id, type: "income", date: p.date, amount: p.amount,
+      label: `${client?.name ?? "Client"} Payment`,
+    });
   },
 };
+
+export function useInvalidateDB() {
+  const qc = useQueryClient();
+  return () => qc.invalidateQueries({ queryKey: DB_KEY });
+}
+
+/** Wrap an async action so it invalidates the cached DB on success. */
+export function useAction<TArgs extends unknown[], TResult>(
+  fn: (...args: TArgs) => Promise<TResult>,
+) {
+  const invalidate = useInvalidateDB();
+  return useMutation({
+    mutationFn: (args: TArgs) => fn(...args),
+    onSuccess: () => invalidate(),
+  });
+}
 
 export function totals(db: DB) {
   const income = db.transactions.filter((t) => t.type === "income").reduce((a, b) => a + b.amount, 0);
@@ -202,7 +187,7 @@ export function clientTotals(db: DB, clientId: string) {
 }
 
 export function formatINR(n: number) {
-  return "₹" + n.toLocaleString("en-IN");
+  return "₹" + (n || 0).toLocaleString("en-IN");
 }
 
 export function dayName(iso: string) {
