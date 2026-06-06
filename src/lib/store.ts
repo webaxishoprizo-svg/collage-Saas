@@ -118,6 +118,11 @@ export function useHydrated() {
   return data !== undefined;
 }
 
+export function useDBStatus() {
+  // Local-first reads are synchronous from the user's POV — never "loading".
+  return { isLoading: false as const, isError: false as const };
+}
+
 // ---- Sync state hook for header indicator ----
 
 export function useSyncStatus() {
