@@ -22,6 +22,7 @@ export type LocalClient = {
   mobile: string;
   site: string;
   total_project: number;
+  site_images: string | null; // JSON string of string[]
   created_at: string;
   updated_at: string;
   _dirty?: 0 | 1;

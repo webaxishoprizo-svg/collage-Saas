@@ -3,7 +3,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "app.lovable.painterwork",
   appName: "Painter Work",
-  webDir: "dist",
+  webDir: "dist/client",
   android: {
     allowMixedContent: false,
   },

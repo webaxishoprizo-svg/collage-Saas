@@ -51,6 +51,22 @@ function ClientDetails() {
         <Stat label="Pending Amount" value={formatINR(t.pending)} accent="warning" />
       </div>
 
+      {client.siteImages && client.siteImages.length > 0 && (
+        <div className="mb-4">
+          <p className="text-sm font-semibold mb-2">Site Images</p>
+          <div className="flex gap-2">
+            {client.siteImages.map((img, index) => (
+              <div
+                key={index}
+                className="flex-1 aspect-square rounded-xl overflow-hidden border border-border bg-muted relative"
+              >
+                <img src={img} alt={`Site image ${index + 1}`} className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <p className="text-sm font-semibold mb-2">Payment History</p>
       <div className="space-y-2 mb-4">
         {payments.map((p) => (

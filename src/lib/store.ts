@@ -37,6 +37,7 @@ export type Client = {
   mobile: string;
   site: string;
   totalProject: number;
+  siteImages?: string[] | null;
 };
 
 export type Payment = {
@@ -100,6 +101,7 @@ function mapAll(raw: {
     clients: raw.clients.map((c) => ({
       id: c.id, name: c.name, mobile: c.mobile, site: c.site,
       totalProject: Number(c.total_project),
+      siteImages: c.site_images ? JSON.parse(c.site_images) : [],
     })),
     payments: raw.payments.map((p) => ({
       id: p.id, clientId: p.client_id, date: p.date, amount: Number(p.amount),
@@ -221,6 +223,7 @@ export const actions = {
       mobile: c.mobile ?? "",
       site: c.site ?? "",
       total_project: c.totalProject ?? 0,
+      site_images: c.siteImages ? JSON.stringify(c.siteImages) : null,
       created_at: nowIso(),
       updated_at: nowIso(),
       _dirty: 1,

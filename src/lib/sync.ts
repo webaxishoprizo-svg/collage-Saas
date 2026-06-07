@@ -17,7 +17,7 @@ type SyncState = {
   error: string | null;
 };
 
-const state: SyncState = {
+let state: SyncState = {
   online: typeof navigator === "undefined" ? true : navigator.onLine,
   syncing: false,
   lastSync: null,
@@ -29,7 +29,7 @@ type Listener = (s: SyncState) => void;
 const listeners = new Set<Listener>();
 
 export function getSyncState(): SyncState {
-  return { ...state };
+  return state;
 }
 
 export function subscribeSync(l: Listener): () => void {
@@ -39,14 +39,14 @@ export function subscribeSync(l: Listener): () => void {
   };
 }
 
-function emit() {
-  const snap = getSyncState();
-  listeners.forEach((l) => l(snap));
+function updateState(updates: Partial<SyncState>) {
+  state = { ...state, ...updates };
+  listeners.forEach((l) => l(state));
 }
 
 async function refreshPendingCount() {
-  state.pendingCount = await localDB.outbox.count();
-  emit();
+  const count = await localDB.outbox.count();
+  updateState({ pendingCount: count });
 }
 
 export async function pullAll(userId: string) {
@@ -176,20 +176,18 @@ export async function syncNow(): Promise<void> {
   if (!state.online) return;
 
   syncInFlight = (async () => {
-    state.syncing = true;
-    state.error = null;
-    emit();
+    updateState({ syncing: true, error: null });
     try {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return;
       // Push first so server has our writes, then pull a fresh copy.
       await flushOutbox();
       await pullAll(u.user.id);
-      state.lastSync = new Date().toISOString();
+      updateState({ lastSync: new Date().toISOString() });
     } catch (e) {
-      state.error = e instanceof Error ? e.message : String(e);
+      updateState({ error: e instanceof Error ? e.message : String(e) });
     } finally {
-      state.syncing = false;
+      updateState({ syncing: false });
       await refreshPendingCount();
       syncInFlight = null;
     }
@@ -205,13 +203,11 @@ export function startSyncEngine() {
   started = true;
 
   window.addEventListener("online", () => {
-    state.online = true;
-    emit();
+    updateState({ online: true });
     void syncNow();
   });
   window.addEventListener("offline", () => {
-    state.online = false;
-    emit();
+    updateState({ online: false });
   });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && state.online) {
@@ -238,7 +234,5 @@ export async function bootstrapAfterSignIn() {
 export async function teardownAfterSignOut() {
   const { clearLocalData } = await import("./local-db");
   await clearLocalData();
-  state.lastSync = null;
-  state.pendingCount = 0;
-  emit();
+  updateState({ lastSync: null, pendingCount: 0 });
 }

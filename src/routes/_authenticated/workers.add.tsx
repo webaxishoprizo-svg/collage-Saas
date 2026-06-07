@@ -4,6 +4,7 @@ import { actions, useInvalidateDB } from "@/lib/store";
 import { Camera, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Camera as CapCamera, CameraResultType, CameraSource } from "@capacitor/camera";
 
 export const Route = createFileRoute("/_authenticated/workers/add")({
   head: () => ({ meta: [{ title: "Add Worker — Painter Work" }] }),
@@ -15,14 +16,34 @@ function AddWorker() {
   const invalidate = useInvalidateDB();
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
+  const [photo, setPhoto] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  async function takePhoto() {
+    try {
+      const image = await CapCamera.getPhoto({
+        quality: 70,
+        allowEditing: false,
+        resultType: CameraResultType.Base64,
+        source: CameraSource.Prompt,
+      });
+      if (image.base64String) {
+        setPhoto(`data:image/jpeg;base64,${image.base64String}`);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (!/cancelled/i.test(msg) && !/no image/i.test(msg)) {
+        toast.error("Failed to capture image: " + msg);
+      }
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
     setBusy(true);
     try {
-      await actions.addWorker({ name: name.trim(), mobile: mobile.trim() });
+      await actions.addWorker({ name: name.trim(), mobile: mobile.trim(), photo });
       await invalidate();
       nav({ to: "/" });
     } catch (err) {
@@ -36,8 +57,16 @@ function AddWorker() {
     <AppShell title="Add Worker" back="/" hideNav>
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="flex justify-center pt-2">
-          <button type="button" className="h-28 w-28 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-            <Camera className="h-8 w-8" />
+          <button
+            onClick={takePhoto}
+            type="button"
+            className="h-28 w-28 rounded-full bg-muted flex items-center justify-center text-muted-foreground overflow-hidden border border-border"
+          >
+            {photo ? (
+              <img src={photo} alt="Worker preview" className="h-full w-full object-cover" />
+            ) : (
+              <Camera className="h-8 w-8" />
+            )}
           </button>
         </div>
         <p className="text-center text-xs text-muted-foreground -mt-2">Upload Photo</p>

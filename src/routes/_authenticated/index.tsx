@@ -50,9 +50,13 @@ function Workers() {
             const todayEntry = db.work.find((e) => e.workerId === w.id && e.date === todayISO);
             return (
               <div key={w.id} className="bg-card border border-border rounded-xl p-3 flex items-center gap-3">
-                <div className="h-11 w-11 rounded-full bg-accent flex items-center justify-center text-primary">
-                  <User className="h-5 w-5" />
-                </div>
+                {w.photo ? (
+                  <img src={w.photo} alt={w.name} className="h-11 w-11 rounded-full object-cover border border-border" />
+                ) : (
+                  <div className="h-11 w-11 rounded-full bg-accent flex items-center justify-center text-primary">
+                    <User className="h-5 w-5" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-semibold truncate">{w.name}</p>
