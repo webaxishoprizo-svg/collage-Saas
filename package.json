@@ -12,6 +12,8 @@
     "format": "prettier --write .",
     "cap:add:android": "cap add android",
     "cap:sync": "cap sync android",
+    "cap:assets": "capacitor-assets generate --android --assetPath resources",
+    "android:icons": "bash scripts/apply-android-resources.sh",
     "android:build": "vite build && cap sync android && cap open android"
   },
   "dependencies": {

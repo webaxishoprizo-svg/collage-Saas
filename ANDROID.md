@@ -1,75 +1,84 @@
 # Build the Painter Work Android App (Capacitor)
 
 This project wraps the web app in a native Android shell using
-[Capacitor](https://capacitorjs.com/). The app also works **fully offline** —
-data is stored locally with Dexie/IndexedDB and synced to the backend when
-internet is available.
+[Capacitor](https://capacitorjs.com/) with **full offline support** —
+data is stored locally with Dexie/IndexedDB and synced when online.
+
+The app uses the **"P" icon** branding everywhere — favicon, launcher icon,
+adaptive icon, and splash screen — on a solid **black** background.
 
 ## Prerequisites (one time)
 
 - [Node.js 20+](https://nodejs.org/) and `npm`
-- [Android Studio](https://developer.android.com/studio) (includes the Android
-  SDK & emulator)
-- A real Android device with USB debugging enabled, **or** an Android emulator
+- [Android Studio](https://developer.android.com/studio)
+- A real Android device with USB debugging, **or** an emulator
 
 ## First-time setup
 
 ```bash
-# 1. Clone the repo and install dependencies
-git clone <your-repo-url>
-cd <repo>
+# 1. Install dependencies
 npm install
 
-# 2. Build the web app (creates /dist)
+# 2. Build the web app
 npm run build
 
 # 3. Add the Android platform (creates /android folder)
 npm run cap:add:android
 
-# 4. Sync the built web assets into the Android project
+# 4. Apply branding (icons + splash) — choose ONE of the two options below
+#
+# Option A (recommended): regenerate from source images in /resources
+npm run cap:assets
+#
+# Option B: copy the pre-generated PNGs from /android-resources
+npm run android:icons
+
+# 5. Sync web assets into the Android project
 npm run cap:sync
 
-# 5. Open Android Studio
+# 6. Open Android Studio
 npx cap open android
 ```
 
-In Android Studio:
-1. Wait for Gradle to finish syncing.
-2. Click **Run ▶** to install on a connected device/emulator, or
-3. **Build → Build Bundle(s)/APK(s) → Build APK(s)** to get an installable
-   `app-debug.apk` (under `android/app/build/outputs/apk/debug/`).
+In Android Studio: **Run ▶** to install on a device, or
+**Build → Build APK(s)** to produce `app-debug.apk`.
 
-For a signed Play Store release, follow:
-https://capacitorjs.com/docs/android/deploying-to-google-play
-
-## Updating the app after code changes
+## Updating after code changes
 
 ```bash
-npm run android:build   # builds web + syncs to android + opens Android Studio
+npm run android:build   # build + sync + open Android Studio
 ```
 
-Then hit Run ▶ in Android Studio.
+## Branding assets
 
-## How offline works
+| File                             | Purpose                                |
+| -------------------------------- | -------------------------------------- |
+| `public/icon.png`                | Web favicon & in-app logo (512×512)    |
+| `resources/icon.png`             | Source for `@capacitor/assets`         |
+| `resources/icon-foreground.png`  | Adaptive icon foreground               |
+| `resources/icon-background.png`  | Adaptive icon background (solid black) |
+| `resources/splash.png`           | 2732×2732 splash source                |
+| `android-resources/mipmap-*`     | Pre-generated launcher PNGs            |
+| `android-resources/drawable/splash.png` | Pre-generated splash drawable   |
 
-- All reads come from a local IndexedDB store (Dexie) — instant, no network.
-- All writes save locally first, then queue an outbox entry.
-- The outbox is flushed to the backend automatically when the device is online,
-  when the app returns to the foreground, and every 30 seconds.
-- The header shows a Wi-Fi icon (online), Wi-Fi-off icon (offline), or a
-  spinner (syncing). A small badge shows how many writes are still pending.
-- Tap the icon to force a sync.
-- On sign-out the local cache is wiped for privacy.
+To change the logo: replace `public/icon.png`, then re-run steps 4–5.
 
-### Conflict handling
+## Splash screen
 
-This version uses **last-write-wins** at the server level. Since each user
-sees only their own data (RLS scoped to `auth.uid()`), conflicts are rare —
-they only happen if the same user edits on two devices while both are
-offline.
+Configured in `capacitor.config.ts` under `plugins.SplashScreen`:
 
-### Things to know
+- Background: `#000000` (black)
+- Duration: 2s, auto-hides
+- Centered "P" logo
+- Drawable: `@drawable/splash`
 
-- The first sign-in requires internet (auth tokens).
-- After that, the cached session lets the app open offline.
-- A fresh install on a new device pulls all your data on first sign-in.
+## Offline architecture
+
+- Reads come from local IndexedDB (Dexie) — instant, no network.
+- Writes save locally first, then queue to an outbox.
+- The outbox flushes when online, on app resume, and every 30s.
+- Header shows a Wi-Fi / offline / syncing indicator with a pending badge.
+- Tap the icon to force a sync; sign-out wipes the local cache.
+
+Conflict policy: **last-write-wins** (rare in practice — RLS scopes
+data per-user, so only same-user multi-device offline edits collide).
