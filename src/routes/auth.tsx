@@ -73,7 +73,7 @@ function AuthPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mb-3">P</div>
+          <img src="/icon.png" alt="Painter Work" className="mx-auto h-16 w-16 rounded-2xl mb-3 object-cover" />
           <h1 className="text-2xl font-bold tracking-tight">Painter Work</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {mode === "signin" ? "Sign in to manage your business" : "Create your account"}
