@@ -9,6 +9,7 @@ import { z } from "zod";
 
 const searchSchema = z.object({
   id: z.string().optional(),
+  classId: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/workers/add")({
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/workers/add")({
 });
 
 function AddWorker() {
-  const { id } = Route.useSearch();
+  const { id, classId: queryClassId } = Route.useSearch();
   const nav = useNavigate();
   const db = useDB();
   const invalidate = useInvalidateDB();
@@ -39,8 +40,10 @@ function AddWorker() {
       setMobile(student.mobile);
       setClassId(student.classId || "");
       setPhoto(student.photo || null);
+    } else if (queryClassId) {
+      setClassId(queryClassId);
     }
-  }, [student]);
+  }, [student, queryClassId]);
 
   async function takePhoto() {
     try {
