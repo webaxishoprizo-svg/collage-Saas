@@ -108,7 +108,7 @@ class PainterWorkLocalDB extends Dexie {
   }
 }
 
-export const localDB = new PWMSLocalDB();
+export const localDB = new PainterWorkLocalDB();
 
 export async function clearLocalData() {
   await localDB.transaction(
