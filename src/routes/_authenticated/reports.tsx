@@ -3,7 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { totals, useDB, formatINR } from "@/lib/store";
 
 export const Route = createFileRoute("/_authenticated/reports")({
-  head: () => ({ meta: [{ title: "Reports — PWMS" }] }),
+  head: () => ({ meta: [{ title: "Reports — Painter Work" }] }),
   component: Reports,
 });
 

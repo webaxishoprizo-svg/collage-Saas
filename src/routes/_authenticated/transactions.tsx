@@ -3,7 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { useDB, formatINR } from "@/lib/store";
 
 export const Route = createFileRoute("/_authenticated/transactions")({
-  head: () => ({ meta: [{ title: "Transactions — PWMS" }] }),
+  head: () => ({ meta: [{ title: "Transactions — Painter Work" }] }),
   component: TxPage,
 });
 

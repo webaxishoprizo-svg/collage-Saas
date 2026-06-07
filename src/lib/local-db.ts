@@ -85,7 +85,7 @@ export type SyncMeta = {
   value: string;
 };
 
-class PWMSLocalDB extends Dexie {
+class PainterWorkLocalDB extends Dexie {
   workers!: Table<LocalWorker, string>;
   clients!: Table<LocalClient, string>;
   work_entries!: Table<LocalWorkEntry, string>;
@@ -95,7 +95,7 @@ class PWMSLocalDB extends Dexie {
   meta!: Table<SyncMeta, string>;
 
   constructor() {
-    super("pwms-local-v1");
+    super("painterwork-local-v1");
     this.version(1).stores({
       workers: "id, user_id, updated_at, _dirty",
       clients: "id, user_id, updated_at, _dirty",

@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/work/add")({
-  head: () => ({ meta: [{ title: "Add Work Entry — PWMS" }] }),
+  head: () => ({ meta: [{ title: "Add Work Entry — Painter Work" }] }),
   component: AddWork,
 });
 
