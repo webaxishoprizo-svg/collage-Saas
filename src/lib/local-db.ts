@@ -9,6 +9,8 @@ export type LocalWorker = {
   user_id: string;
   name: string;
   mobile: string;
+  roll_number: string;
+  class_id: string | null;
   photo: string | null;
   created_at: string;
   updated_at: string;
@@ -36,6 +38,8 @@ export type LocalWorkEntry = {
   site: string;
   wages: number;
   status: "worked" | "absent";
+  class_id?: string | null;
+  notes?: string | null;
   created_at: string;
   _dirty?: 0 | 1;
 };
@@ -105,6 +109,10 @@ class PainterWorkLocalDB extends Dexie {
       transactions: "id, user_id, date, type, _dirty",
       outbox: "++id, user_id, table, created_at",
       meta: "key",
+    });
+    this.version(2).stores({
+      workers: "id, user_id, updated_at, class_id, _dirty",
+      work_entries: "id, user_id, worker_id, date, class_id, _dirty",
     });
   }
 }

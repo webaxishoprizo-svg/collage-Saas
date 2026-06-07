@@ -18,27 +18,34 @@ import { subscribeSync, getSyncState, syncNow } from "./sync";
 export type Worker = {
   id: string;
   name: string;
-  mobile: string;
+  mobile: string; // Phone
+  rollNumber: string; // Roll number
+  classId: string | null; // Class ID
   photo?: string | null;
 };
+export type Student = Worker;
+
+export type Client = {
+  id: string;
+  name: string; // Class Name
+  mobile: string; // Semester/Year
+  site: string; // Subject Name
+  totalProject: number;
+  siteImages?: string[] | null;
+};
+export type Class = Client;
 
 export type WorkEntry = {
   id: string;
   workerId: string;
+  classId: string;
   date: string;
-  site: string;
+  site: string; // Subject Name
   wages: number;
   status: "worked" | "absent";
+  notes?: string;
 };
-
-export type Client = {
-  id: string;
-  name: string;
-  mobile: string;
-  site: string;
-  totalProject: number;
-  siteImages?: string[] | null;
-};
+export type AttendanceRecord = WorkEntry;
 
 export type Payment = {
   id: string;
@@ -58,9 +65,9 @@ export type Transaction = {
 };
 
 export type DB = {
-  workers: Worker[];
-  work: WorkEntry[];
-  clients: Client[];
+  workers: Student[];
+  work: AttendanceRecord[];
+  clients: Class[];
   payments: Payment[];
   transactions: Transaction[];
 };
@@ -92,14 +99,28 @@ function mapAll(raw: {
 }): DB {
   return {
     workers: raw.workers.map((w) => ({
-      id: w.id, name: w.name, mobile: w.mobile, photo: w.photo,
+      id: w.id,
+      name: w.name,
+      mobile: w.mobile,
+      rollNumber: w.roll_number || "",
+      classId: w.class_id,
+      photo: w.photo,
     })),
     work: raw.work.map((e) => ({
-      id: e.id, workerId: e.worker_id, date: e.date, site: e.site,
-      wages: Number(e.wages), status: e.status,
+      id: e.id,
+      workerId: e.worker_id,
+      classId: e.class_id || "",
+      date: e.date,
+      site: e.site,
+      wages: Number(e.wages),
+      status: e.status,
+      notes: e.notes || "",
     })),
     clients: raw.clients.map((c) => ({
-      id: c.id, name: c.name, mobile: c.mobile, site: c.site,
+      id: c.id,
+      name: c.name,
+      mobile: c.mobile,
+      site: c.site,
       totalProject: Number(c.total_project),
       siteImages: c.site_images ? JSON.parse(c.site_images) : [],
     })),
@@ -170,6 +191,8 @@ export const actions = {
       user_id,
       name: w.name,
       mobile: w.mobile ?? "",
+      roll_number: w.rollNumber ?? "",
+      class_id: w.classId ?? null,
       photo: w.photo ?? null,
       created_at: nowIso(),
       updated_at: nowIso(),
@@ -177,6 +200,123 @@ export const actions = {
     };
     await localDB.workers.put(row);
     await enqueue("workers", { ...stripDirty(row) }, user_id);
+    void syncNow();
+  },
+
+  async updateWorker(id: string, w: Omit<Worker, "id">) {
+    const user_id = await currentUserId();
+    const row: LocalWorker = {
+      id,
+      user_id,
+      name: w.name,
+      mobile: w.mobile ?? "",
+      roll_number: w.rollNumber ?? "",
+      class_id: w.classId ?? null,
+      photo: w.photo ?? null,
+      created_at: nowIso(),
+      updated_at: nowIso(),
+      _dirty: 1,
+    };
+    await localDB.workers.put(row);
+    await enqueue("workers", { ...stripDirty(row) }, user_id);
+    void syncNow();
+  },
+
+  async deleteWorker(id: string) {
+    const user_id = await currentUserId();
+    await localDB.workers.delete(id);
+    const entries = await localDB.work_entries.where("worker_id").equals(id).toArray();
+    await Promise.all(entries.map((e) => localDB.work_entries.delete(e.id)));
+    if (navigator.onLine) {
+      await supabase.from("workers").delete().eq("id", id);
+    }
+    void syncNow();
+  },
+
+  async addClient(c: Omit<Client, "id">) {
+    const user_id = await currentUserId();
+    const row: LocalClient = {
+      id: newId(),
+      user_id,
+      name: c.name,
+      mobile: c.mobile ?? "",
+      site: c.site ?? "",
+      total_project: c.totalProject ?? 0,
+      site_images: c.siteImages ? JSON.stringify(c.siteImages) : null,
+      created_at: nowIso(),
+      updated_at: nowIso(),
+      _dirty: 1,
+    };
+    await localDB.clients.put(row);
+    await enqueue("clients", { ...stripDirty(row) }, user_id);
+    void syncNow();
+  },
+
+  async updateClient(id: string, c: Omit<Client, "id">) {
+    const user_id = await currentUserId();
+    const row: LocalClient = {
+      id,
+      user_id,
+      name: c.name,
+      mobile: c.mobile ?? "",
+      site: c.site ?? "",
+      total_project: c.totalProject ?? 0,
+      site_images: c.siteImages ? JSON.stringify(c.siteImages) : null,
+      created_at: nowIso(),
+      updated_at: nowIso(),
+      _dirty: 1,
+    };
+    await localDB.clients.put(row);
+    await enqueue("clients", { ...stripDirty(row) }, user_id);
+    void syncNow();
+  },
+
+  async deleteClient(id: string) {
+    await localDB.clients.delete(id);
+    const workers = await localDB.workers.where("class_id").equals(id).toArray();
+    for (const w of workers) {
+      const updated: LocalWorker = { ...w, class_id: null, _dirty: 1 };
+      await localDB.workers.put(updated);
+      await enqueue("workers", { ...stripDirty(updated) }, w.user_id);
+    }
+    const entries = await localDB.work_entries.where("class_id").equals(id).toArray();
+    for (const e of entries) {
+      await localDB.work_entries.delete(e.id);
+    }
+    if (navigator.onLine) {
+      await supabase.from("clients").delete().eq("id", id);
+    }
+    void syncNow();
+  },
+
+  async saveAttendance(
+    classId: string,
+    date: string,
+    subjectName: string,
+    records: { studentId: string; status: "worked" | "absent" }[],
+    notes: string,
+  ) {
+    const user_id = await currentUserId();
+    for (const r of records) {
+      const list = await localDB.work_entries.where("worker_id").equals(r.studentId).toArray();
+      const matched = list.find((e) => e.date === date);
+
+      const row: LocalWorkEntry = {
+        id: matched?.id ?? newId(),
+        user_id,
+        worker_id: r.studentId,
+        date,
+        site: subjectName,
+        wages: 0,
+        status: r.status,
+        class_id: classId,
+        notes: notes || null,
+        created_at: matched?.created_at ?? nowIso(),
+        _dirty: 1,
+      };
+      await localDB.work_entries.put(row);
+      await enqueue("work_entries", { ...stripDirty(row) }, user_id);
+    }
     void syncNow();
   },
 
@@ -190,6 +330,8 @@ export const actions = {
       site: e.site,
       wages: e.wages,
       status: e.status,
+      class_id: e.classId || null,
+      notes: e.notes || null,
       created_at: nowIso(),
       _dirty: 1,
     };
@@ -211,25 +353,6 @@ export const actions = {
       await localDB.transactions.put(tx);
       await enqueue("transactions", { ...stripDirty(tx) }, user_id);
     }
-    void syncNow();
-  },
-
-  async addClient(c: Omit<Client, "id">) {
-    const user_id = await currentUserId();
-    const row: LocalClient = {
-      id: newId(),
-      user_id,
-      name: c.name,
-      mobile: c.mobile ?? "",
-      site: c.site ?? "",
-      total_project: c.totalProject ?? 0,
-      site_images: c.siteImages ? JSON.stringify(c.siteImages) : null,
-      created_at: nowIso(),
-      updated_at: nowIso(),
-      _dirty: 1,
-    };
-    await localDB.clients.put(row);
-    await enqueue("clients", { ...stripDirty(row) }, user_id);
     void syncNow();
   },
 

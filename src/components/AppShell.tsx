@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Users, Calculator, LayoutDashboard, UserCircle2, FileBarChart2, ArrowLeft, LogOut, Wifi, WifiOff, RefreshCw } from "lucide-react";
+import { Users, CheckSquare, LayoutDashboard, BookOpen, FileBarChart2, ArrowLeft, LogOut, Wifi, WifiOff, RefreshCw } from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -7,10 +7,10 @@ import { useSyncStatus } from "@/lib/store";
 import { syncNow } from "@/lib/sync";
 
 const tabs = [
-  { to: "/", label: "Workers", icon: Users },
-  { to: "/calculator", label: "Calculator", icon: Calculator },
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/clients", label: "Clients", icon: UserCircle2 },
+  { to: "/", label: "Students", icon: Users },
+  { to: "/calculator", label: "Attendance", icon: CheckSquare },
+  { to: "/dashboard", label: "Analytics", icon: LayoutDashboard },
+  { to: "/clients", label: "Classes", icon: BookOpen },
   { to: "/reports", label: "Reports", icon: FileBarChart2 },
 ] as const;
 

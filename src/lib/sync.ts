@@ -109,9 +109,9 @@ async function pushOne(entry: OutboxEntry): Promise<void> {
   if (op !== "insert") return;
   // Dynamic table name collapses the typed insert union; route through any.
   const tbl = supabase.from(table) as unknown as {
-    insert: (p: unknown) => Promise<{ error: { code?: string; message: string } | null }>;
+    upsert: (p: unknown) => Promise<{ error: { code?: string; message: string } | null }>;
   };
-  const { error } = await tbl.insert(payload);
+  const { error } = await tbl.upsert(payload);
   if (error) {
     // Unique-violation means the row already made it to the server on a prior
     // attempt — treat as success so we don't get stuck.

@@ -12,14 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCalculatorRouteImport } from './routes/_authenticated/calculator'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients.index'
 import { Route as AuthenticatedWorkersAddRouteImport } from './routes/_authenticated/workers.add'
-import { Route as AuthenticatedWorkAddRouteImport } from './routes/_authenticated/work.add'
-import { Route as AuthenticatedPaymentsAddRouteImport } from './routes/_authenticated/payments.add'
 import { Route as AuthenticatedClientsAddRouteImport } from './routes/_authenticated/clients.add'
 import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients.$id'
 
@@ -37,12 +34,6 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedTransactionsRoute =
-  AuthenticatedTransactionsRouteImport.update({
-    id: '/transactions',
-    path: '/transactions',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -69,17 +60,6 @@ const AuthenticatedWorkersAddRoute = AuthenticatedWorkersAddRouteImport.update({
   path: '/workers/add',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedWorkAddRoute = AuthenticatedWorkAddRouteImport.update({
-  id: '/work/add',
-  path: '/work/add',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPaymentsAddRoute =
-  AuthenticatedPaymentsAddRouteImport.update({
-    id: '/payments/add',
-    path: '/payments/add',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedClientsAddRoute = AuthenticatedClientsAddRouteImport.update({
   id: '/clients/add',
   path: '/clients/add',
@@ -97,11 +77,8 @@ export interface FileRoutesByFullPath {
   '/calculator': typeof AuthenticatedCalculatorRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/transactions': typeof AuthenticatedTransactionsRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
   '/clients/add': typeof AuthenticatedClientsAddRoute
-  '/payments/add': typeof AuthenticatedPaymentsAddRoute
-  '/work/add': typeof AuthenticatedWorkAddRoute
   '/workers/add': typeof AuthenticatedWorkersAddRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
 }
@@ -110,12 +87,9 @@ export interface FileRoutesByTo {
   '/calculator': typeof AuthenticatedCalculatorRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/transactions': typeof AuthenticatedTransactionsRoute
   '/': typeof AuthenticatedIndexRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
   '/clients/add': typeof AuthenticatedClientsAddRoute
-  '/payments/add': typeof AuthenticatedPaymentsAddRoute
-  '/work/add': typeof AuthenticatedWorkAddRoute
   '/workers/add': typeof AuthenticatedWorkersAddRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
 }
@@ -126,12 +100,9 @@ export interface FileRoutesById {
   '/_authenticated/calculator': typeof AuthenticatedCalculatorRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clients/$id': typeof AuthenticatedClientsIdRoute
   '/_authenticated/clients/add': typeof AuthenticatedClientsAddRoute
-  '/_authenticated/payments/add': typeof AuthenticatedPaymentsAddRoute
-  '/_authenticated/work/add': typeof AuthenticatedWorkAddRoute
   '/_authenticated/workers/add': typeof AuthenticatedWorkersAddRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
 }
@@ -143,11 +114,8 @@ export interface FileRouteTypes {
     | '/calculator'
     | '/dashboard'
     | '/reports'
-    | '/transactions'
     | '/clients/$id'
     | '/clients/add'
-    | '/payments/add'
-    | '/work/add'
     | '/workers/add'
     | '/clients/'
   fileRoutesByTo: FileRoutesByTo
@@ -156,12 +124,9 @@ export interface FileRouteTypes {
     | '/calculator'
     | '/dashboard'
     | '/reports'
-    | '/transactions'
     | '/'
     | '/clients/$id'
     | '/clients/add'
-    | '/payments/add'
-    | '/work/add'
     | '/workers/add'
     | '/clients'
   id:
@@ -171,12 +136,9 @@ export interface FileRouteTypes {
     | '/_authenticated/calculator'
     | '/_authenticated/dashboard'
     | '/_authenticated/reports'
-    | '/_authenticated/transactions'
     | '/_authenticated/'
     | '/_authenticated/clients/$id'
     | '/_authenticated/clients/add'
-    | '/_authenticated/payments/add'
-    | '/_authenticated/work/add'
     | '/_authenticated/workers/add'
     | '/_authenticated/clients/'
   fileRoutesById: FileRoutesById
@@ -207,13 +169,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/transactions': {
-      id: '/_authenticated/transactions'
-      path: '/transactions'
-      fullPath: '/transactions'
-      preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reports': {
@@ -251,20 +206,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkersAddRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/work/add': {
-      id: '/_authenticated/work/add'
-      path: '/work/add'
-      fullPath: '/work/add'
-      preLoaderRoute: typeof AuthenticatedWorkAddRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/payments/add': {
-      id: '/_authenticated/payments/add'
-      path: '/payments/add'
-      fullPath: '/payments/add'
-      preLoaderRoute: typeof AuthenticatedPaymentsAddRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/clients/add': {
       id: '/_authenticated/clients/add'
       path: '/clients/add'
@@ -286,12 +227,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalculatorRoute: typeof AuthenticatedCalculatorRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedClientsIdRoute: typeof AuthenticatedClientsIdRoute
   AuthenticatedClientsAddRoute: typeof AuthenticatedClientsAddRoute
-  AuthenticatedPaymentsAddRoute: typeof AuthenticatedPaymentsAddRoute
-  AuthenticatedWorkAddRoute: typeof AuthenticatedWorkAddRoute
   AuthenticatedWorkersAddRoute: typeof AuthenticatedWorkersAddRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
 }
@@ -300,12 +238,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCalculatorRoute: AuthenticatedCalculatorRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
-  AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedClientsIdRoute: AuthenticatedClientsIdRoute,
   AuthenticatedClientsAddRoute: AuthenticatedClientsAddRoute,
-  AuthenticatedPaymentsAddRoute: AuthenticatedPaymentsAddRoute,
-  AuthenticatedWorkAddRoute: AuthenticatedWorkAddRoute,
   AuthenticatedWorkersAddRoute: AuthenticatedWorkersAddRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
 }
