@@ -4,7 +4,7 @@ import { clientTotals, useDB, useDBStatus, formatINR } from "@/lib/store";
 import { Plus, User, MoreVertical } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/clients/$id")({
-  head: () => ({ meta: [{ title: "Client Details — PWMS" }] }),
+  head: () => ({ meta: [{ title: "Client Details — Painter Work" }] }),
   component: ClientDetails,
 });
 

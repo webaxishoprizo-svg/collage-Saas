@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Sign in — PWMS" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Painter Work" }] }),
   component: AuthPage,
 });
 
@@ -74,7 +74,7 @@ function AuthPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="mx-auto h-14 w-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mb-3">P</div>
-          <h1 className="text-2xl font-bold tracking-tight">Paint Workers</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Painter Work</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {mode === "signin" ? "Sign in to manage your business" : "Create your account"}
           </p>

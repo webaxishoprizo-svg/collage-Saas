@@ -5,7 +5,7 @@ import { Bell } from "lucide-react";
 import { useMemo } from "react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — PWMS" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — Painter Work" }] }),
   component: Dashboard,
 });
 

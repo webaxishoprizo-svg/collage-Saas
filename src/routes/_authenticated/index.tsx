@@ -4,7 +4,7 @@ import { useDB, useDBStatus, formatINR } from "@/lib/store";
 import { Plus, Filter, User } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/")({
-  head: () => ({ meta: [{ title: "Workers — PWMS" }] }),
+  head: () => ({ meta: [{ title: "Workers — Painter Work" }] }),
   component: Workers,
 });
 

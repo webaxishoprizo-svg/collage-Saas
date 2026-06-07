@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "app.lovable.pixelpaint",
-  appName: "PWMS",
+  appId: "app.lovable.painterwork",
+  appName: "Painter Work",
   webDir: "dist",
   android: {
     allowMixedContent: false,

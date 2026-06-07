@@ -6,7 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/clients/add")({
-  head: () => ({ meta: [{ title: "Add Client — PWMS" }] }),
+  head: () => ({ meta: [{ title: "Add Client — Painter Work" }] }),
   component: AddClient,
 });
 

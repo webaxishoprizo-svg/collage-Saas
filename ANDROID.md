@@ -1,4 +1,4 @@
-# Build the PWMS Android App (Capacitor)
+# Build the Painter Work Android App (Capacitor)
 
 This project wraps the web app in a native Android shell using
 [Capacitor](https://capacitorjs.com/). The app also works **fully offline** —

@@ -5,7 +5,7 @@ import { Plus, Minus, Calendar } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/calculator")({
-  head: () => ({ meta: [{ title: "Calculator — PWMS" }] }),
+  head: () => ({ meta: [{ title: "Calculator — Painter Work" }] }),
   component: CalcPage,
 });
 

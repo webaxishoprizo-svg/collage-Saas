@@ -9,7 +9,7 @@ import { toast } from "sonner";
 const search = z.object({ clientId: z.string().optional() });
 
 export const Route = createFileRoute("/_authenticated/payments/add")({
-  head: () => ({ meta: [{ title: "Add Payment — PWMS" }] }),
+  head: () => ({ meta: [{ title: "Add Payment — Painter Work" }] }),
   validateSearch: search,
   component: AddPayment,
 });

@@ -5,7 +5,7 @@ import { Plus, Search } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/clients/")({
-  head: () => ({ meta: [{ title: "Clients — PWMS" }] }),
+  head: () => ({ meta: [{ title: "Clients — Painter Work" }] }),
   component: ClientsPage,
 });
 
