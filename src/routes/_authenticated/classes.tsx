@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useDB, actions } from "@/lib/store";
 import { getCurrentUser } from "@/lib/auth";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Plus, BookOpen, Trash2 } from "lucide-react";
 
@@ -22,6 +22,16 @@ function ClassesManagement() {
   const [name, setName] = useState("");
   const [subject, setSubject] = useState("");
   const [busy, setBusy] = useState(false);
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+
+  const groupedClasses = useMemo(() => {
+    const groups: Record<string, typeof db.classes> = {};
+    db.classes.forEach(c => {
+      if (!groups[c.name]) groups[c.name] = [];
+      groups[c.name].push(c);
+    });
+    return Object.entries(groups).map(([name, classes]) => ({ name, classes }));
+  }, [db.classes]);
 
 
   async function handleAddClass(e: React.FormEvent) {
@@ -111,46 +121,69 @@ function ClassesManagement() {
       {/* Classes List */}
       <div>
         <h3 className="text-sm font-semibold uppercase text-gray-400 tracking-wider mb-3">
-          Active Classes ({db.classes.length})
+          Active Classes ({groupedClasses.length} Groups)
         </h3>
 
-        {db.classes.length === 0 ? (
+        {groupedClasses.length === 0 ? (
           <div className="text-center py-12 border border-dashed border-[#e5e7eb] rounded-lg text-xs text-gray-400">
             No classes defined yet. Add a class to get started.
           </div>
         ) : (
           <div className="space-y-3">
-            {db.classes.map((cls) => {
-              // Count assigned students
-              const studentCount = db.students.filter((s) => s.classIds?.includes(cls.id)).length;
+            {groupedClasses.map((group) => {
+              const groupClassIds = group.classes.map(c => c.id);
+              const studentCount = db.students.filter((s) => s.classIds?.some(id => groupClassIds.includes(id))).length;
+              const isExpanded = expandedGroup === group.name;
 
               return (
-                <div
-                  key={cls.id}
-                  className="bg-white p-4 rounded-xl border border-[#e5e7eb] flex items-center justify-between shadow-sm hover:border-blue-100 transition"
-                >
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="mt-1 p-2 bg-blue-50 text-[#2563eb] rounded-lg">
-                      <BookOpen className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-bold text-[#111827] truncate text-sm">{cls.name}</p>
-                      <p className="text-gray-500 text-xs mt-0.5 font-medium">
-                        Subject: <span className="text-[#2563eb]">{cls.subject}</span>
-                      </p>
-                      <span className="inline-block mt-2 text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">
-                        {studentCount} {studentCount === 1 ? "student" : "students"} assigned
-                      </span>
+                <div key={group.name} className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm overflow-hidden">
+                  <div 
+                    onClick={() => setExpandedGroup(isExpanded ? null : group.name)}
+                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition"
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="mt-1 p-2 bg-blue-50 text-[#2563eb] rounded-lg">
+                        <BookOpen className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-[#111827] truncate text-sm">{group.name}</p>
+                        <p className="text-gray-500 text-xs mt-0.5 font-medium">
+                          {group.classes.length} Subject(s)
+                        </p>
+                        <span className="inline-block mt-2 text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">
+                          {studentCount} {studentCount === 1 ? "student" : "students"} total
+                        </span>
+                      </div>
                     </div>
                   </div>
-
-                  <button
-                    onClick={() => handleDeleteClass(cls.id)}
-                    className="p-2.5 rounded-lg border border-red-100 hover:bg-red-50 text-red-500 transition shrink-0 ml-3"
-                    title="Delete Class"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  
+                  {isExpanded && (
+                    <div className="bg-gray-50 border-t border-gray-100 p-4 space-y-3">
+                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Subjects in {group.name}</h4>
+                      {group.classes.map(cls => {
+                        const lecturer = db.lecturers.find(l => l.classIds?.includes(cls.id));
+                        const clsStudentCount = db.students.filter((s) => s.classIds?.includes(cls.id)).length;
+                        return (
+                          <div key={cls.id} className="bg-white p-3 rounded-lg border border-gray-200 flex items-center justify-between shadow-sm">
+                            <div>
+                              <p className="text-sm font-bold text-gray-800">{cls.subject}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Lecturer: {lecturer ? <span className="font-semibold text-[#2563eb]">{lecturer.name}</span> : <span className="italic">Unassigned</span>}
+                              </p>
+                              <p className="text-[10px] text-gray-400 mt-1">{clsStudentCount} students assigned</p>
+                            </div>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDeleteClass(cls.id); }}
+                              className="p-2 rounded-lg border border-red-100 hover:bg-red-50 text-red-500 transition shrink-0 ml-3"
+                              title="Delete Subject"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })}

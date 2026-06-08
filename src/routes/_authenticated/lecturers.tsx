@@ -23,6 +23,7 @@ function LecturersManagement() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"teacher" | "super_admin">("teacher");
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
   // Access Control: Super Admin only
@@ -55,12 +56,14 @@ function LecturersManagement() {
         username: username.trim(),
         password: password.trim(),
         role,
+        classIds: selectedClasses,
       });
       toast.success(`Lecturer '${name}' added successfully.`);
       setName("");
       setUsername("");
       setPassword("");
       setRole("teacher");
+      setSelectedClasses([]);
     } catch (err) {
       toast.error("Failed to add lecturer.");
     } finally {
@@ -142,6 +145,28 @@ function LecturersManagement() {
             </select>
           </div>
 
+          {db.classes.length > 0 && (
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">Assign Classes</label>
+              <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border border-[#e5e7eb] rounded-lg p-3 bg-white">
+                {db.classes.map(cls => (
+                  <label key={cls.id} className="flex items-center gap-2 text-xs text-gray-700">
+                    <input 
+                      type="checkbox"
+                      checked={selectedClasses.includes(cls.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) setSelectedClasses([...selectedClasses, cls.id]);
+                        else setSelectedClasses(selectedClasses.filter(id => id !== cls.id));
+                      }}
+                      className="rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]"
+                    />
+                    {cls.name} <span className="text-gray-400">({cls.subject})</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={busy}
@@ -188,6 +213,13 @@ function LecturersManagement() {
                     <span className={`inline-block mt-2 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${lec.role === "super_admin" ? "bg-purple-100 text-purple-700 border border-purple-200" : "bg-blue-50 text-[#2563eb] border border-blue-200"}`}>
                       {lec.role === "super_admin" ? "Super Admin" : "Lecturer"}
                     </span>
+                    {lec.classIds && lec.classIds.length > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Classes: <span className="font-semibold text-gray-700">
+                          {lec.classIds.map(id => db.classes.find(c => c.id === id)?.name).filter(Boolean).join(", ")}
+                        </span>
+                      </p>
+                    )}
                   </div>
                 </div>
 

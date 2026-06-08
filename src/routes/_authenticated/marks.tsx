@@ -2,12 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useDB, actions, type LMS_DB } from "@/lib/store";
 import { getCurrentUser, type AuthUser } from "@/lib/auth";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Plus, Percent, Trash2, Award, BookOpen, Upload } from "lucide-react";
-import type { LocalStudent, LocalMark, LocalClass } from "@/lib/local-db";
+import type { LocalStudent, LocalMark, LocalClass, LocalLecturer } from "@/lib/store";
 import * as xlsx from "xlsx";
-import { useRef } from "react";
 
 export const Route = createFileRoute("/_authenticated/marks")({
   head: () => ({ meta: [{ title: "LMS - Student Marks" }] }),
@@ -23,7 +22,7 @@ function MarksPage() {
   }
 
   return user.role === "teacher" || user.role === "super_admin" ? (
-    <TeacherMarks db={db} />
+    <TeacherMarks db={db} user={user} />
   ) : (
     <StudentMarks user={user} db={db} />
   );
@@ -31,22 +30,50 @@ function MarksPage() {
 
 // ================= TEACHER MARKS MANAGEMENT =================
 
-function TeacherMarks({ db }: { db: LMS_DB }) {
+function TeacherMarks({ db, user }: { db: LMS_DB; user: AuthUser }) {
   const [studentId, setStudentId] = useState("");
-  const [subject, setSubject] = useState("");
+  const [selectedClassId, setSelectedClassId] = useState("");
   const [score, setScore] = useState("");
   const [maxScore, setMaxScore] = useState("100");
   const [busy, setBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const currentLecturer = db.lecturers.find((l) => l.id === user.id);
+  const isSuperAdmin = user.role === "super_admin";
+  
+  const availableClasses = useMemo(() => {
+    if (isSuperAdmin) return db.classes;
+    const assignedIds = currentLecturer?.classIds || [];
+    return db.classes.filter(c => assignedIds.includes(c.id));
+  }, [isSuperAdmin, db.classes, currentLecturer]);
+
+  // Auto-select class if only one is assigned
+  useEffect(() => {
+    if (availableClasses.length === 1 && selectedClassId !== availableClasses[0].id) {
+      setSelectedClassId(availableClasses[0].id);
+    }
+  }, [availableClasses, selectedClassId]);
+
+  const filteredStudents = useMemo(() => {
+    return db.students.filter(stu => {
+      if (!selectedClassId) return false; // Require a class to be selected
+      return stu.classIds && stu.classIds.includes(selectedClassId);
+    });
+  }, [db.students, selectedClassId]);
+
+  // Get the subject from the selected class
+  const selectedSubject = useMemo(() => {
+    return db.classes.find(c => c.id === selectedClassId)?.subject || "";
+  }, [db.classes, selectedClassId]);
+
   async function handleAddMarks(e: React.FormEvent) {
     e.preventDefault();
-    const cleanSubject = subject.trim();
+    const cleanSubject = selectedSubject.trim();
     const scoreNum = Number(score);
     const maxNum = Number(maxScore);
 
-    if (!studentId || !cleanSubject || isNaN(scoreNum) || isNaN(maxNum)) {
-      toast.error("Please provide valid student, subject, and scores.");
+    if (!studentId || !selectedClassId || !cleanSubject || isNaN(scoreNum) || isNaN(maxNum)) {
+      toast.error("Please provide valid student, class, and scores.");
       return;
     }
 
@@ -64,7 +91,6 @@ function TeacherMarks({ db }: { db: LMS_DB }) {
         maxMarks: maxNum,
       });
       toast.success("Marks added successfully.");
-      setSubject("");
       setScore("");
     } catch (err) {
       toast.error("Failed to save student marks.");
@@ -153,37 +179,47 @@ function TeacherMarks({ db }: { db: LMS_DB }) {
 
         <form onSubmit={handleAddMarks} className="space-y-3">
           <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Select Class</label>
+            {availableClasses.length === 1 ? (
+              <div className="w-full border border-gray-100 bg-gray-50 text-gray-500 rounded-lg px-3 py-2.5 text-xs font-medium">
+                {availableClasses[0].name} ({availableClasses[0].subject})
+              </div>
+            ) : (
+              <select
+                required
+                value={selectedClassId}
+                onChange={(e) => {
+                  setSelectedClassId(e.target.value);
+                  setStudentId("");
+                }}
+                className="w-full border border-[#e5e7eb] rounded-lg px-3 py-2.5 text-xs bg-white focus:outline-none mb-3"
+              >
+                <option value="">-- Choose Class --</option>
+                {availableClasses.map(c => (
+                  <option key={c.id} value={c.id}>{c.name} ({c.subject})</option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">Select Student</label>
             <select
               value={studentId}
               required
+              disabled={!selectedClassId}
               onChange={(e) => setStudentId(e.target.value)}
-              className="w-full border border-[#e5e7eb] rounded-lg px-3 py-2.5 text-xs bg-white focus:outline-none"
+              className="w-full border border-[#e5e7eb] rounded-lg px-3 py-2.5 text-xs bg-white focus:outline-none disabled:opacity-50"
             >
-              <option value="">-- Choose Student --</option>
-              {db.students.map((stu: LocalStudent) => {
-                const assignedClasses = stu.classIds && stu.classIds.length > 0
-                  ? stu.classIds.map((id) => db.classes.find((c) => c.id === id)?.name).filter(Boolean).join(", ")
-                  : "Unassigned";
+              <option value="">{selectedClassId ? "-- Choose Student --" : "-- Select a Class First --"}</option>
+              {filteredStudents.map((stu: LocalStudent) => {
                 return (
                   <option key={stu.id} value={stu.id}>
-                    {stu.name} (ID: {stu.campusId}) - {assignedClasses}
+                    {stu.name} (ID: {stu.campusId})
                   </option>
                 );
               })}
             </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Subject Name</label>
-            <input
-              type="text"
-              required
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="e.g. Database Systems"
-              className="w-full border border-[#e5e7eb] rounded-lg px-3 py-2 text-sm bg-white focus:outline-none"
-            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
