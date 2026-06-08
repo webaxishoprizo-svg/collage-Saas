@@ -25,6 +25,7 @@ function LecturersManagement() {
   const [role, setRole] = useState<"teacher" | "super_admin">("teacher");
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
+  const [editingLecturerId, setEditingLecturerId] = useState<string | null>(null);
 
   // Access Control: Super Admin only
   if (!user || user.role !== "super_admin") {
@@ -51,21 +52,33 @@ function LecturersManagement() {
 
     setBusy(true);
     try {
-      await actions.addLecturer({
-        name: name.trim(),
-        username: username.trim(),
-        password: password.trim(),
-        role,
-        classIds: selectedClasses,
-      });
-      toast.success(`Lecturer '${name}' added successfully.`);
+      if (editingLecturerId) {
+        await actions.updateLecturer(editingLecturerId, {
+          name: name.trim(),
+          username: username.trim(),
+          password: password.trim(),
+          role,
+          classIds: selectedClasses,
+        });
+        toast.success(`Lecturer '${name}' updated successfully.`);
+      } else {
+        await actions.addLecturer({
+          name: name.trim(),
+          username: username.trim(),
+          password: password.trim(),
+          role,
+          classIds: selectedClasses,
+        });
+        toast.success(`Lecturer '${name}' added successfully.`);
+      }
+      setEditingLecturerId(null);
       setName("");
       setUsername("");
       setPassword("");
       setRole("teacher");
       setSelectedClasses([]);
     } catch (err) {
-      toast.error("Failed to add lecturer.");
+      toast.error(editingLecturerId ? "Failed to update lecturer." : "Failed to add lecturer.");
     } finally {
       setBusy(false);
     }
@@ -83,6 +96,13 @@ function LecturersManagement() {
     try {
       await actions.deleteLecturer(id);
       toast.success("Lecturer deleted successfully.");
+      if (editingLecturerId === id) {
+        setEditingLecturerId(null);
+        setName("");
+        setUsername("");
+        setPassword("");
+        setSelectedClasses([]);
+      }
     } catch (err) {
       toast.error("Failed to delete lecturer.");
     }
@@ -92,9 +112,26 @@ function LecturersManagement() {
     <AppShell title="Manage Lecturers" back="/">
       {/* Add Lecturer Card */}
       <div className="bg-[#f9fafb] p-5 rounded-xl border border-[#e5e7eb] mb-6 shadow-sm">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-4 flex items-center gap-2">
-          <Plus className="h-4 w-4 text-[#2563eb]" /> Create Lecturer Account
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2">
+            <Plus className="h-4 w-4 text-[#2563eb]" /> {editingLecturerId ? "Edit Lecturer Account" : "Create Lecturer Account"}
+          </h2>
+          {editingLecturerId && (
+            <button
+              onClick={() => {
+                setEditingLecturerId(null);
+                setName("");
+                setUsername("");
+                setPassword("");
+                setRole("teacher");
+                setSelectedClasses([]);
+              }}
+              className="text-xs text-gray-500 hover:text-gray-700 font-semibold"
+            >
+              Cancel Edit
+            </button>
+          )}
+        </div>
         <form onSubmit={handleAddLecturer} className="space-y-3">
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">Full Name</label>
@@ -172,7 +209,7 @@ function LecturersManagement() {
             disabled={busy}
             className="w-full bg-[#2563eb] text-white rounded-lg py-2 text-sm font-bold hover:bg-blue-700 transition disabled:opacity-50 mt-2"
           >
-            {busy ? "Saving..." : "Create Account"}
+            {busy ? "Saving..." : editingLecturerId ? "Update Account" : "Create Account"}
           </button>
         </form>
       </div>
@@ -224,6 +261,21 @@ function LecturersManagement() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0 ml-3">
+                  <button
+                    onClick={() => {
+                      setEditingLecturerId(lec.id);
+                      setName(lec.name);
+                      setUsername(lec.username);
+                      setPassword(lec.password || "");
+                      setRole(lec.role);
+                      setSelectedClasses(lec.classIds || []);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="p-2 border border-[#e5e7eb] rounded-lg bg-white text-gray-600 hover:bg-gray-50 transition"
+                    title="Edit Account"
+                  >
+                    <svg className="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                  </button>
                   <button
                     onClick={() => handleDeleteLecturer(lec.id, lec.name)}
                     className="p-2 border border-red-100 rounded-lg bg-white text-red-500 hover:bg-red-50 transition"

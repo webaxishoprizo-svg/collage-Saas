@@ -319,8 +319,8 @@ export const actions = {
     return id;
   },
 
-  async updateClass(id: string, c: Partial<Omit<LocalClass, "id" | "created_at" | "updated_at">>) {
-    await supabase.from("classes").update({ name: c.name, subject: c.subject, updated_at: nowIso() }).eq("id", id);
+  async updateClass(id: string, updates: Partial<LocalClass>) {
+    await supabase.from("classes").update({ ...updates, updated_at: nowIso() }).eq("id", id);
     triggerUpdate();
   },
 
