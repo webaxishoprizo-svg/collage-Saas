@@ -1,4 +1,4 @@
-# Painter Work — Convert Web App to Native Android App
+# LLMsrt Web App to Native Android App
 
 This project is already wired for Capacitor. Follow this guide to ship it as an installable Android `.apk` / `.aab`.
 
@@ -159,10 +159,10 @@ For **OTA updates without rebuilding the APK**, look into Capacitor Live Updates
 
 ## What's already configured
 
-- `capacitor.config.ts` → `appId: app.lovable.painterwork`, `appName: Painter Work`, splash screen
+- `capacitor.config.ts` → `appId: app.lovable.LLMs`, `appName: LLMs`, splash screen
 - `/resources` → source icon + splash
 - `/android-resources` → pre-generated adaptive icons (mdpi → xxxhdpi)
 - `scripts/apply-android-resources.sh` → copies them into the Android project
-- Offline-first local DB (`PainterWorkLocalDB`) syncs with Lovable Cloud when online
+- Offline-first local DB (`LLMsLocalDB`) syncs with Lovable Cloud when online
 
 You're shipping a real native app — not a webview shortcut.

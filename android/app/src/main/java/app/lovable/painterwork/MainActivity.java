@@ -1,4 +1,4 @@
-package app.lovable.painterwork;
+package app.lovable.LLMs;
 
 import com.getcapacitor.BridgeActivity;
 

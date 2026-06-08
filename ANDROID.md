@@ -1,4 +1,4 @@
-# Build the Painter Work Android App (Capacitor)
+# Build the LLMs Android App (Capacitor)
 
 This project wraps the web app in a native Android shell using
 [Capacitor](https://capacitorjs.com/) with **full offline support** —

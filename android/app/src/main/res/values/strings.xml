@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Painter Work</string>
-    <string name="title_activity_main">Painter Work</string>
-    <string name="package_name">app.lovable.painterwork</string>
-    <string name="custom_url_scheme">app.lovable.painterwork</string>
+    <string name="app_name">LLMs</string>
+    <string name="title_activity_main">LLMs</string>
+    <string name="package_name">app.lovable.LLMs</string>
+    <string name="custom_url_scheme">app.lovable.LLMs</string>
 </resources>
