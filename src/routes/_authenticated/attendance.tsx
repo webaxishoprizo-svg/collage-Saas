@@ -5,7 +5,7 @@ import { getCurrentUser, type AuthUser } from "@/lib/auth";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { Check, X, Calendar, UserCheck, BarChart, Download, Upload } from "lucide-react";
-import type { LocalStudent, LocalClass, LocalAttendance } from "@/lib/local-db";
+import type { LocalStudent, LocalClass, LocalAttendance } from "@/lib/store";
 import * as xlsx from "xlsx";
 import { useRef } from "react";
 

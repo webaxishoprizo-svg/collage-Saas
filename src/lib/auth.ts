@@ -1,4 +1,4 @@
-import { localDB } from "./local-db";
+
 import { supabase } from "@/integrations/supabase/client";
 
 export type AuthUser = {
@@ -38,81 +38,45 @@ export async function login(
   const normId = campusId.trim();
   const normPass = password.trim();
 
-  // Check local database for lecturer/admin
-  let lecturer = await localDB.lecturers.where("username").equalsIgnoreCase(normId).first();
-  if (!lecturer && navigator.onLine) {
-    const { data } = await supabase.from("lecturers").select("*").ilike("username", normId).maybeSingle();
-    if (data) {
-      lecturer = {
-        id: data.id,
-        name: data.name,
-        username: data.username,
-        password: data.password || "",
-        role: data.role as "super_admin" | "teacher",
-        created_at: data.created_at,
-        updated_at: data.updated_at
-      };
-      // Try to save it locally for future offline logins
-      await localDB.lecturers.put(lecturer);
-    }
-  }
-  if (lecturer) {
-    if (lecturer.password !== normPass) {
+  // Try lecturer
+  const { data: lecturerData, error: lecErr } = await supabase.from("lecturers").select("*").ilike("username", normId).maybeSingle();
+  if (lecturerData) {
+    if (lecturerData.password !== normPass) {
       throw new Error("Incorrect password for lecturer account.");
     }
     const teacherUser: AuthUser = {
-      id: lecturer.id,
-      role: lecturer.role,
-      name: lecturer.name,
-      campusId: lecturer.username,
+      id: lecturerData.id,
+      role: lecturerData.role as "super_admin" | "teacher",
+      name: lecturerData.name,
+      campusId: lecturerData.username,
     };
     setCurrentUser(teacherUser);
     return teacherUser;
   }
 
-  // Check Dexie database for student
-  let student = await localDB.students.where("campusId").equalsIgnoreCase(normId).first();
-  if (!student && navigator.onLine) {
-    const { data } = await supabase.from("students").select("*").ilike("campus_id", normId).maybeSingle();
-    if (data) {
-      student = {
-        id: data.id,
-        name: data.name,
-        campusId: data.campus_id,
-        password: data.password || "",
-        classIds: data.class_ids || [],
-        enrollmentDate: data.enrollment_date,
-        durationMonths: data.duration_months,
-        created_at: data.created_at,
-        updated_at: data.updated_at
-      };
-      // Try to save it locally
-      await localDB.students.put(student);
-    }
-  }
-  if (student) {
-    // Check expiration
-    if (student.durationMonths !== null) {
-      const enrollDate = new Date(student.enrollmentDate);
+  // Try student
+  const { data: studentData, error: stuErr } = await supabase.from("students").select("*").ilike("campus_id", normId).maybeSingle();
+  if (studentData) {
+    if (studentData.duration_months !== null) {
+      const enrollDate = new Date(studentData.enrollment_date);
       if (!isNaN(enrollDate.getTime())) {
         const expirationDate = new Date(enrollDate);
-        expirationDate.setMonth(expirationDate.getMonth() + student.durationMonths);
+        expirationDate.setMonth(expirationDate.getMonth() + studentData.duration_months);
         if (new Date() > expirationDate) {
-          // Delete expired student
-          import("@/lib/store").then(m => m.actions.deleteStudent(student.id));
+          import("@/lib/store").then(m => m.actions.deleteStudent(studentData.id));
           throw new Error("Your enrollment period has expired. Please contact administration.");
         }
       }
     }
 
-    if (student.password !== normPass) {
+    if (studentData.password !== normPass) {
       throw new Error("Incorrect password for student account.");
     }
     const studentUser: AuthUser = {
-      id: student.id,
+      id: studentData.id,
       role: "student",
-      name: student.name,
-      campusId: student.campusId,
+      name: studentData.name,
+      campusId: studentData.campus_id,
     };
     setCurrentUser(studentUser);
     return studentUser;

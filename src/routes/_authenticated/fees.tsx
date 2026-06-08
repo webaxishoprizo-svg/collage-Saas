@@ -5,7 +5,7 @@ import { getCurrentUser, type AuthUser } from "@/lib/auth";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { DollarSign, Edit3, X, Save, TrendingUp, CheckCircle, AlertCircle } from "lucide-react";
-import type { LocalStudent, LocalFee } from "@/lib/local-db";
+import type { LocalStudent, LocalFee } from "@/lib/store";
 
 type FeesSearch = {
   filter?: "pending" | "all";

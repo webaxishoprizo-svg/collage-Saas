@@ -5,7 +5,7 @@ import { getCurrentUser, type AuthUser } from "@/lib/auth";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Upload, FileText, Download, Trash2, Filter } from "lucide-react";
-import type { LocalDocument, LocalClass } from "@/lib/local-db";
+import type { LocalDocument, LocalClass } from "@/lib/store";
 
 export const Route = createFileRoute("/_authenticated/documents")({
   head: () => ({ meta: [{ title: "LMS - Study Materials" }] }),

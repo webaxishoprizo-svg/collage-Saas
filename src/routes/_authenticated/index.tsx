@@ -26,7 +26,7 @@ import type {
   LocalAttendance,
   LocalFee,
   LocalClass,
-} from "@/lib/local-db";
+} from "@/lib/store";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "LMS - Home" }] }),
