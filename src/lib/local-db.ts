@@ -1,155 +1,152 @@
 import Dexie, { type Table } from "dexie";
 
-/**
- * Local mirror of the Supabase tables. Rows are stored in the same snake_case
- * shape as Postgres so syncing back is a 1:1 upsert.
- */
-export type LocalWorker = {
+export type LocalStudent = {
   id: string;
-  user_id: string;
   name: string;
-  mobile: string;
-  roll_number: string;
-  class_id: string | null;
-  photo: string | null;
+  campusId: string;
+  password?: string;
+  classIds: string[]; // Replaces classId, allows multiple subjects
+  enrollmentDate: string; // ISO date of enrollment
+  durationMonths: number | null; // e.g. 3, 6, or null for unlimited
   created_at: string;
   updated_at: string;
-  _dirty?: 0 | 1;
 };
 
-export type LocalClient = {
+export type LocalLecturer = {
   id: string;
-  user_id: string;
   name: string;
-  mobile: string;
-  site: string;
-  total_project: number;
-  site_images: string | null; // JSON string of string[]
+  username: string;
+  password?: string;
+  role: "super_admin" | "teacher";
   created_at: string;
   updated_at: string;
-  _dirty?: 0 | 1;
 };
 
-export type LocalWorkEntry = {
+export type LocalLecturerAttendance = {
+  id: string; // lecturerId + "_" + date
+  lecturerId: string;
+  date: string; // YYYY-MM-DD
+  status: "present" | "absent" | "leave";
+  created_at: string;
+};
+
+export type LocalNotification = {
   id: string;
-  user_id: string;
-  worker_id: string;
-  date: string;
-  site: string;
-  wages: number;
-  status: "worked" | "absent";
-  class_id?: string | null;
-  notes?: string | null;
+  recipientId: string; // Student ID or "all" for class-wide
+  classId?: string; // If applicable
+  title: string;
+  message: string;
+  type: "mark" | "document" | "general";
+  read: boolean;
   created_at: string;
-  _dirty?: 0 | 1;
 };
 
-export type LocalPayment = {
+export type LocalClass = {
   id: string;
-  user_id: string;
-  client_id: string;
-  date: string;
-  amount: number;
-  mode: string;
-  note: string | null;
+  name: string; // e.g. "Computer Science 101"
+  subject: string; // e.g. "Programming"
   created_at: string;
-  _dirty?: 0 | 1;
+  updated_at: string;
 };
 
-export type LocalTransaction = {
+export type LocalAttendance = {
+  id: string; // studentId + "_" + date + "_" + classId
+  studentId: string;
+  classId: string;
+  date: string; // YYYY-MM-DD
+  status: "present" | "absent";
+  created_at: string;
+};
+
+export type LocalDocument = {
   id: string;
-  user_id: string;
-  type: "income" | "expense";
-  date: string;
-  amount: number;
-  label: string;
+  title: string;
+  fileUrl: string; // Base64 data URL or external mockup link
+  classId: string; // Class ID or "all"
+  subject: string; // Subject label for filtering
   created_at: string;
-  _dirty?: 0 | 1;
 };
 
-export type OutboxOp = "insert"; // upgrade later for update/delete
-
-export type OutboxEntry = {
-  id?: number;
-  user_id: string;
-  table:
-    | "workers"
-    | "clients"
-    | "work_entries"
-    | "payments"
-    | "transactions";
-  op: OutboxOp;
-  payload: Record<string, unknown>;
+export type LocalMark = {
+  id: string;
+  studentId: string;
+  subject: string;
+  marks: number;
+  maxMarks: number;
   created_at: string;
-  attempts: number;
-  last_error: string | null;
 };
 
-export type SyncMeta = {
-  key: string; // e.g. "lastPull"
-  value: string;
+export type LocalFee = {
+  studentId: string; // Primary key
+  total: number;
+  paid: number;
+  pending: number; // total - paid
+  updated_at: string;
 };
 
-class PainterWorkLocalDB extends Dexie {
-  workers!: Table<LocalWorker, string>;
-  clients!: Table<LocalClient, string>;
-  work_entries!: Table<LocalWorkEntry, string>;
-  payments!: Table<LocalPayment, string>;
-  transactions!: Table<LocalTransaction, string>;
-  outbox!: Table<OutboxEntry, number>;
-  meta!: Table<SyncMeta, string>;
+class LecturerManagementDB extends Dexie {
+  students!: Table<LocalStudent, string>;
+  classes!: Table<LocalClass, string>;
+  attendance!: Table<LocalAttendance, string>;
+  documents!: Table<LocalDocument, string>;
+  marks!: Table<LocalMark, string>;
+  fees!: Table<LocalFee, string>;
+  lecturers!: Table<LocalLecturer, string>;
+  lecturer_attendance!: Table<LocalLecturerAttendance, string>;
+  notifications!: Table<LocalNotification, string>;
 
   constructor() {
-    super("painterwork-local-v1");
-    this.version(1).stores({
-      workers: "id, user_id, updated_at, _dirty",
-      clients: "id, user_id, updated_at, _dirty",
-      work_entries: "id, user_id, worker_id, date, _dirty",
-      payments: "id, user_id, client_id, date, _dirty",
-      transactions: "id, user_id, date, type, _dirty",
-      outbox: "++id, user_id, table, created_at",
-      meta: "key",
-    });
-    this.version(2).stores({
-      workers: "id, user_id, updated_at, class_id, _dirty",
-      work_entries: "id, user_id, worker_id, date, class_id, _dirty",
+    super("lms-local-db-v7");
+    this.version(7).stores({
+      students: "id, campusId, *classIds",
+      classes: "id",
+      attendance: "id, studentId, classId, date",
+      documents: "id, classId",
+      marks: "id, studentId",
+      fees: "studentId",
+      lecturers: "id, username",
+      lecturer_attendance: "id, lecturerId, date",
+      notifications: "id, recipientId, classId, read",
     });
   }
 }
 
-export const localDB = new PainterWorkLocalDB();
+export const localDB = new LecturerManagementDB();
 
 export async function clearLocalData() {
   await localDB.transaction(
     "rw",
     [
-      localDB.workers,
-      localDB.clients,
-      localDB.work_entries,
-      localDB.payments,
-      localDB.transactions,
-      localDB.outbox,
-      localDB.meta,
+      localDB.students,
+      localDB.classes,
+      localDB.attendance,
+      localDB.documents,
+      localDB.marks,
+      localDB.fees,
+      localDB.lecturers,
+      localDB.lecturer_attendance,
+      localDB.notifications,
     ],
     async () => {
       await Promise.all([
-        localDB.workers.clear(),
-        localDB.clients.clear(),
-        localDB.work_entries.clear(),
-        localDB.payments.clear(),
-        localDB.transactions.clear(),
-        localDB.outbox.clear(),
-        localDB.meta.clear(),
+        localDB.students.clear(),
+        localDB.classes.clear(),
+        localDB.attendance.clear(),
+        localDB.documents.clear(),
+        localDB.marks.clear(),
+        localDB.fees.clear(),
+        localDB.lecturers.clear(),
+        localDB.lecturer_attendance.clear(),
+        localDB.notifications.clear(),
       ]);
     },
   );
 }
 
-export function nowIso() {
+export function nowIso(): string {
   return new Date().toISOString();
 }
 
-export function newId() {
-  // crypto.randomUUID is available in modern browsers and Capacitor WebView.
+export function newId(): string {
   return crypto.randomUUID();
 }

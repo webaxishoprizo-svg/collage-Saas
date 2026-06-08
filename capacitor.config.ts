@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "app.lovable.painterwork",
-  appName: "Painter Work",
+  appId: "com.lms.lecturermanagement",
+  appName: "Lecturer Management System",
   webDir: "dist/client",
   android: {
     allowMixedContent: false,

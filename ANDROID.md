@@ -51,15 +51,15 @@ npm run android:build   # build + sync + open Android Studio
 
 ## Branding assets
 
-| File                             | Purpose                                |
-| -------------------------------- | -------------------------------------- |
-| `public/icon.png`                | Web favicon & in-app logo (512×512)    |
-| `resources/icon.png`             | Source for `@capacitor/assets`         |
-| `resources/icon-foreground.png`  | Adaptive icon foreground               |
-| `resources/icon-background.png`  | Adaptive icon background (solid black) |
-| `resources/splash.png`           | 2732×2732 splash source                |
-| `android-resources/mipmap-*`     | Pre-generated launcher PNGs            |
-| `android-resources/drawable/splash.png` | Pre-generated splash drawable   |
+| File                                    | Purpose                                |
+| --------------------------------------- | -------------------------------------- |
+| `public/icon.png`                       | Web favicon & in-app logo (512×512)    |
+| `resources/icon.png`                    | Source for `@capacitor/assets`         |
+| `resources/icon-foreground.png`         | Adaptive icon foreground               |
+| `resources/icon-background.png`         | Adaptive icon background (solid black) |
+| `resources/splash.png`                  | 2732×2732 splash source                |
+| `android-resources/mipmap-*`            | Pre-generated launcher PNGs            |
+| `android-resources/drawable/splash.png` | Pre-generated splash drawable          |
 
 To change the logo: replace `public/icon.png`, then re-run steps 4–5.
 

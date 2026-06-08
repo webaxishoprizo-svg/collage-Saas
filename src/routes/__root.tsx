@@ -81,24 +81,41 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Painter Work" },
-      { name: "description", content: "Manage paint workers, wages, work sites, clients and finances." },
-      { name: "author", content: "Painter Work" },
-      { property: "og:title", content: "Painter Work" },
-      { property: "og:description", content: "Manage paint workers, wages, work sites, clients and finances." },
+      { title: "LMS - Lecturer Management System" },
+      {
+        name: "description",
+        content:
+          "LMS with Student Portal - Mark attendance, upload documents, track marks and fees.",
+      },
+      { name: "author", content: "Lecturer Management System" },
+      { property: "og:title", content: "Lecturer Management System" },
+      {
+        property: "og:description",
+        content:
+          "LMS with Student Portal - Mark attendance, upload documents, track marks and fees.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Painter Work" },
-      { name: "twitter:description", content: "Manage paint workers, wages, work sites, clients and finances." },
+      { name: "twitter:title", content: "Lecturer Management System" },
+      {
+        name: "twitter:description",
+        content:
+          "LMS with Student Portal - Mark attendance, upload documents, track marks and fees.",
+      },
     ],
     links: [
-      { rel: "icon", type: "image/png", href: "/icon-dark.png", media: "(prefers-color-scheme: light)" },
-      { rel: "icon", type: "image/png", href: "/icon.png", media: "(prefers-color-scheme: dark)" },
+      {
+        rel: "icon",
+        type: "image/png",
+        href: "/icon.png",
+      },
       { rel: "apple-touch-icon", href: "/icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400,500,600,700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400,500,600,700&display=swap",
+      },
       { rel: "stylesheet", href: appCss },
     ],
   }),
@@ -124,25 +141,6 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const router = useRouter();
-
-  useEffect(() => {
-    // Lazy import keeps Supabase out of SSR bundle paths
-    Promise.all([
-      import("@/integrations/supabase/client"),
-      import("@/lib/sync"),
-    ]).then(([{ supabase }, sync]) => {
-      sync.startSyncEngine();
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string) => {
-        if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-        router.invalidate();
-        if (event === "SIGNED_IN") void sync.bootstrapAfterSignIn();
-        if (event === "SIGNED_OUT") void sync.teardownAfterSignOut();
-        if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-      });
-      return () => subscription.unsubscribe();
-    });
-  }, [router, queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -85,17 +85,21 @@ bunx cap sync android
 ## 7. Run on an emulator or device
 
 **Emulator:**
+
 ```bash
 bunx cap open android
 ```
+
 Then in Android Studio: pick a device in the toolbar → click **Run ▶**.
 
 **Physical phone:**
+
 1. Enable **Developer Options → USB Debugging** on the phone.
 2. Plug in via USB, accept the prompt.
 3. The phone appears in Android Studio's device dropdown — click **Run ▶**.
 
 **CLI shortcut (if a device/emulator is already running):**
+
 ```bash
 bunx cap run android
 ```
@@ -105,6 +109,7 @@ bunx cap run android
 ## 8. Build a release APK / AAB (for Play Store)
 
 In Android Studio:
+
 1. **Build → Generate Signed Bundle / APK**
 2. Choose **Android App Bundle** (recommended) or **APK**.
 3. Create a new keystore the first time — **back this file up**, you need it for every future update.
@@ -118,6 +123,7 @@ Upload the `.aab` to https://play.google.com/console.
 ## 9. iOS (optional)
 
 Mac + Xcode required:
+
 ```bash
 bunx cap add ios
 bun run build && bunx cap sync ios
@@ -129,6 +135,7 @@ bunx cap open ios
 ## Updating the app later
 
 Web change only (no native code touched):
+
 ```bash
 bun run build && bunx cap sync android
 # then Run ▶ in Android Studio, OR rebuild release AAB and upload
@@ -140,13 +147,13 @@ For **OTA updates without rebuilding the APK**, look into Capacitor Live Updates
 
 ## Troubleshooting
 
-| Problem | Fix |
-| --- | --- |
-| White screen on launch | `bun run build` was skipped — always build before `cap sync` |
-| Old icon still showing | Uninstall the app from the device, then re-run |
-| Gradle / SDK errors | Open `/android` in Android Studio once, let it sync, accept SDK license prompts |
-| Google sign-in fails inside the app | Add the APK's SHA-1 fingerprint to your OAuth provider settings |
-| "Cleartext HTTP not permitted" | Your API must be HTTPS (Lovable Cloud already is) |
+| Problem                             | Fix                                                                             |
+| ----------------------------------- | ------------------------------------------------------------------------------- |
+| White screen on launch              | `bun run build` was skipped — always build before `cap sync`                    |
+| Old icon still showing              | Uninstall the app from the device, then re-run                                  |
+| Gradle / SDK errors                 | Open `/android` in Android Studio once, let it sync, accept SDK license prompts |
+| Google sign-in fails inside the app | Add the APK's SHA-1 fingerprint to your OAuth provider settings                 |
+| "Cleartext HTTP not permitted"      | Your API must be HTTPS (Lovable Cloud already is)                               |
 
 ---
 

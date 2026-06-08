@@ -1,148 +1,120 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { login, getCurrentUser } from "@/lib/auth";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { GraduationCap, Lock, User, CheckSquare } from "lucide-react";
+import { useDB } from "@/lib/store";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Sign in — Painter Work" }] }),
+  head: () => ({ meta: [{ title: "LMS - Sign in" }] }),
   component: AuthPage,
 });
 
 function AuthPage() {
   const nav = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
+  const [campusId, setCampusId] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  
+  // Pre-warm the database sync so that localDB is populated when login checks credentials
+  useDB();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }: any) => {
-      if (data?.session) nav({ to: "/", replace: true });
-    });
+    // If already logged in, send to home
+    const user = getCurrentUser();
+    if (user) {
+      nav({ to: "/", replace: true });
+    }
   }, [nav]);
 
-  async function onEmailSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setBusy(true);
-    try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: { full_name: name || email.split("@")[0] },
-          },
-        });
-        if (error) throw error;
-        toast.success("Check your email to confirm your account.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        nav({ to: "/", replace: true });
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setBusy(false);
+    if (!campusId.trim()) {
+      toast.error("Please enter a Campus ID / Username.");
+      return;
     }
-  }
+    if (!password) {
+      toast.error("Please enter a Password.");
+      return;
+    }
 
-  async function onGoogle() {
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin,
-        },
+      const user = await login(campusId, password);
+      toast.success(`Welcome back, ${user.name}!`);
+      // Force navigation to home route
+      nav({ to: "/", replace: true }).then(() => {
+        window.location.reload(); // Hard reload to reset AppShell and Router instances
       });
-      if (error) {
-        toast.error(error.message || "Google sign-in failed");
-      }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      toast.error(err instanceof Error ? err.message : "Authentication failed");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen bg-white text-[#111827] flex flex-col items-center justify-center px-6 py-12">
+      <div className="w-full max-w-md bg-white p-8 rounded-xl border border-[#e5e7eb] shadow-sm">
+        {/* Brand / Logo */}
         <div className="text-center mb-8">
-          <img src="/icon-dark.png" alt="Painter Work" className="mx-auto h-16 w-16 rounded-2xl mb-3 object-cover" />
-          <h1 className="text-2xl font-bold tracking-tight">Painter Work</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {mode === "signin" ? "Sign in to manage your business" : "Create your account"}
+          <div className="mx-auto h-12 w-12 rounded-xl bg-[#2563eb] text-white flex items-center justify-center mb-3">
+            <GraduationCap className="h-7 w-7" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+            LMS Portal
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Access classes, attendance, marks & study materials
           </p>
         </div>
 
-        <button
-          onClick={onGoogle}
-          disabled={busy}
-          className="w-full flex items-center justify-center gap-3 border border-border rounded-lg py-3 font-medium bg-card hover:bg-accent transition disabled:opacity-50"
-        >
-          <GoogleIcon /> Continue with Google
-        </button>
+        {/* Main Auth Form */}
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+              ID
+            </label>
+            <div className="relative">
+              <User className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                required
+                value={campusId}
+                onChange={(e) => setCampusId(e.target.value)}
+                placeholder="e.g. a101"
+                className="w-full border border-[#e5e7eb] rounded-lg pl-10 pr-3 py-3 text-sm bg-white focus:outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]"
+              />
+            </div>
+          </div>
 
-        <div className="flex items-center gap-3 my-5">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">or</span>
-          <div className="h-px flex-1 bg-border" />
-        </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full border border-[#e5e7eb] rounded-lg pl-10 pr-3 py-3 text-sm bg-white focus:outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]"
+              />
+            </div>
+          </div>
 
-        <form onSubmit={onEmailSubmit} className="space-y-3">
-          {mode === "signup" && (
-            <input
-              type="text" value={name} onChange={(e) => setName(e.target.value)}
-              placeholder="Your name" className="input"
-            />
-          )}
-          <input
-            type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email" className="input" autoComplete="email"
-          />
-          <input
-            type="password" required minLength={6} value={password}
-            onChange={(e) => setPassword(e.target.value)} placeholder="Password (min 6 chars)"
-            className="input" autoComplete={mode === "signup" ? "new-password" : "current-password"}
-          />
           <button
-            type="submit" disabled={busy}
-            className="w-full bg-primary text-primary-foreground rounded-lg py-3 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+            type="submit"
+            disabled={busy}
+            className="w-full bg-[#2563eb] text-white rounded-lg py-3 text-sm font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition disabled:opacity-50 mt-6"
           >
-            {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-            {mode === "signin" ? "Sign in" : "Create account"}
+            {busy ? "Signing in..." : "Sign in to Dashboard"}
           </button>
         </form>
-
-        <p className="text-center text-sm text-muted-foreground mt-5">
-          {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
-          <button
-            type="button"
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="text-primary font-medium hover:underline"
-          >
-            {mode === "signin" ? "Create an account" : "Sign in"}
-          </button>
-        </p>
       </div>
-      <style>{`.input{width:100%;border:1px solid var(--color-border);border-radius:0.5rem;padding:0.75rem 0.9rem;font-size:0.9rem;background:var(--color-background);}.input:focus{outline:2px solid var(--color-primary);outline-offset:-1px;}`}</style>
     </div>
-  );
-}
-
-function GoogleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
-      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />
-      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6 29.3 4 24 4 16.3 4 9.6 8.3 6.3 14.7z" />
-      <path fill="#4CAF50" d="M24 44c5.2 0 9.8-2 13.3-5.2l-6.1-5c-2 1.4-4.5 2.2-7.2 2.2-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z" />
-      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.5l6.1 5c-.4.4 6.6-4.8 6.6-14.5 0-1.3-.1-2.3-.4-3.5z" />
-    </svg>
   );
 }

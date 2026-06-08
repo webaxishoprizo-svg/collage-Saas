@@ -13,12 +13,15 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedCalculatorRouteImport } from './routes/_authenticated/calculator'
-import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients.index'
-import { Route as AuthenticatedWorkersAddRouteImport } from './routes/_authenticated/workers.add'
-import { Route as AuthenticatedClientsAddRouteImport } from './routes/_authenticated/clients.add'
-import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients.$id'
+import { Route as AuthenticatedMarksRouteImport } from './routes/_authenticated/marks'
+import { Route as AuthenticatedLecturersRouteImport } from './routes/_authenticated/lecturers'
+import { Route as AuthenticatedLecturerAttendanceRouteImport } from './routes/_authenticated/lecturer-attendance'
+import { Route as AuthenticatedFeesRouteImport } from './routes/_authenticated/fees'
+import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
+import { Route as AuthenticatedClassesRouteImport } from './routes/_authenticated/classes'
+import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
+import { Route as AuthenticatedStudentsIndexRouteImport } from './routes/_authenticated/students.index'
+import { Route as AuthenticatedStudentsAddRouteImport } from './routes/_authenticated/students.add'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -39,108 +42,143 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuthenticatedMarksRoute = AuthenticatedMarksRouteImport.update({
+  id: '/marks',
+  path: '/marks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedCalculatorRoute = AuthenticatedCalculatorRouteImport.update({
-  id: '/calculator',
-  path: '/calculator',
+const AuthenticatedLecturersRoute = AuthenticatedLecturersRouteImport.update({
+  id: '/lecturers',
+  path: '/lecturers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedClientsIndexRoute =
-  AuthenticatedClientsIndexRouteImport.update({
-    id: '/clients/',
-    path: '/clients/',
+const AuthenticatedLecturerAttendanceRoute =
+  AuthenticatedLecturerAttendanceRouteImport.update({
+    id: '/lecturer-attendance',
+    path: '/lecturer-attendance',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedWorkersAddRoute = AuthenticatedWorkersAddRouteImport.update({
-  id: '/workers/add',
-  path: '/workers/add',
+const AuthenticatedFeesRoute = AuthenticatedFeesRouteImport.update({
+  id: '/fees',
+  path: '/fees',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedClientsAddRoute = AuthenticatedClientsAddRouteImport.update({
-  id: '/clients/add',
-  path: '/clients/add',
+const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedClientsIdRoute = AuthenticatedClientsIdRouteImport.update({
-  id: '/clients/$id',
-  path: '/clients/$id',
+const AuthenticatedClassesRoute = AuthenticatedClassesRouteImport.update({
+  id: '/classes',
+  path: '/classes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAttendanceRoute = AuthenticatedAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedStudentsIndexRoute =
+  AuthenticatedStudentsIndexRouteImport.update({
+    id: '/students/',
+    path: '/students/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStudentsAddRoute =
+  AuthenticatedStudentsAddRouteImport.update({
+    id: '/students/add',
+    path: '/students/add',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
-  '/calculator': typeof AuthenticatedCalculatorRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/attendance': typeof AuthenticatedAttendanceRoute
+  '/classes': typeof AuthenticatedClassesRoute
+  '/documents': typeof AuthenticatedDocumentsRoute
+  '/fees': typeof AuthenticatedFeesRoute
+  '/lecturer-attendance': typeof AuthenticatedLecturerAttendanceRoute
+  '/lecturers': typeof AuthenticatedLecturersRoute
+  '/marks': typeof AuthenticatedMarksRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/clients/$id': typeof AuthenticatedClientsIdRoute
-  '/clients/add': typeof AuthenticatedClientsAddRoute
-  '/workers/add': typeof AuthenticatedWorkersAddRoute
-  '/clients/': typeof AuthenticatedClientsIndexRoute
+  '/students/add': typeof AuthenticatedStudentsAddRoute
+  '/students/': typeof AuthenticatedStudentsIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
-  '/calculator': typeof AuthenticatedCalculatorRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/attendance': typeof AuthenticatedAttendanceRoute
+  '/classes': typeof AuthenticatedClassesRoute
+  '/documents': typeof AuthenticatedDocumentsRoute
+  '/fees': typeof AuthenticatedFeesRoute
+  '/lecturer-attendance': typeof AuthenticatedLecturerAttendanceRoute
+  '/lecturers': typeof AuthenticatedLecturersRoute
+  '/marks': typeof AuthenticatedMarksRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/': typeof AuthenticatedIndexRoute
-  '/clients/$id': typeof AuthenticatedClientsIdRoute
-  '/clients/add': typeof AuthenticatedClientsAddRoute
-  '/workers/add': typeof AuthenticatedWorkersAddRoute
-  '/clients': typeof AuthenticatedClientsIndexRoute
+  '/students/add': typeof AuthenticatedStudentsAddRoute
+  '/students': typeof AuthenticatedStudentsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/calculator': typeof AuthenticatedCalculatorRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
+  '/_authenticated/classes': typeof AuthenticatedClassesRoute
+  '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
+  '/_authenticated/fees': typeof AuthenticatedFeesRoute
+  '/_authenticated/lecturer-attendance': typeof AuthenticatedLecturerAttendanceRoute
+  '/_authenticated/lecturers': typeof AuthenticatedLecturersRoute
+  '/_authenticated/marks': typeof AuthenticatedMarksRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/clients/$id': typeof AuthenticatedClientsIdRoute
-  '/_authenticated/clients/add': typeof AuthenticatedClientsAddRoute
-  '/_authenticated/workers/add': typeof AuthenticatedWorkersAddRoute
-  '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
+  '/_authenticated/students/add': typeof AuthenticatedStudentsAddRoute
+  '/_authenticated/students/': typeof AuthenticatedStudentsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/calculator'
-    | '/dashboard'
+    | '/attendance'
+    | '/classes'
+    | '/documents'
+    | '/fees'
+    | '/lecturer-attendance'
+    | '/lecturers'
+    | '/marks'
     | '/reports'
-    | '/clients/$id'
-    | '/clients/add'
-    | '/workers/add'
-    | '/clients/'
+    | '/students/add'
+    | '/students/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
-    | '/calculator'
-    | '/dashboard'
+    | '/attendance'
+    | '/classes'
+    | '/documents'
+    | '/fees'
+    | '/lecturer-attendance'
+    | '/lecturers'
+    | '/marks'
     | '/reports'
     | '/'
-    | '/clients/$id'
-    | '/clients/add'
-    | '/workers/add'
-    | '/clients'
+    | '/students/add'
+    | '/students'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
-    | '/_authenticated/calculator'
-    | '/_authenticated/dashboard'
+    | '/_authenticated/attendance'
+    | '/_authenticated/classes'
+    | '/_authenticated/documents'
+    | '/_authenticated/fees'
+    | '/_authenticated/lecturer-attendance'
+    | '/_authenticated/lecturers'
+    | '/_authenticated/marks'
     | '/_authenticated/reports'
     | '/_authenticated/'
-    | '/_authenticated/clients/$id'
-    | '/_authenticated/clients/add'
-    | '/_authenticated/workers/add'
-    | '/_authenticated/clients/'
+    | '/_authenticated/students/add'
+    | '/_authenticated/students/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -178,71 +216,98 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+    '/_authenticated/marks': {
+      id: '/_authenticated/marks'
+      path: '/marks'
+      fullPath: '/marks'
+      preLoaderRoute: typeof AuthenticatedMarksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/calculator': {
-      id: '/_authenticated/calculator'
-      path: '/calculator'
-      fullPath: '/calculator'
-      preLoaderRoute: typeof AuthenticatedCalculatorRouteImport
+    '/_authenticated/lecturers': {
+      id: '/_authenticated/lecturers'
+      path: '/lecturers'
+      fullPath: '/lecturers'
+      preLoaderRoute: typeof AuthenticatedLecturersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/clients/': {
-      id: '/_authenticated/clients/'
-      path: '/clients'
-      fullPath: '/clients/'
-      preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
+    '/_authenticated/lecturer-attendance': {
+      id: '/_authenticated/lecturer-attendance'
+      path: '/lecturer-attendance'
+      fullPath: '/lecturer-attendance'
+      preLoaderRoute: typeof AuthenticatedLecturerAttendanceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/workers/add': {
-      id: '/_authenticated/workers/add'
-      path: '/workers/add'
-      fullPath: '/workers/add'
-      preLoaderRoute: typeof AuthenticatedWorkersAddRouteImport
+    '/_authenticated/fees': {
+      id: '/_authenticated/fees'
+      path: '/fees'
+      fullPath: '/fees'
+      preLoaderRoute: typeof AuthenticatedFeesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/clients/add': {
-      id: '/_authenticated/clients/add'
-      path: '/clients/add'
-      fullPath: '/clients/add'
-      preLoaderRoute: typeof AuthenticatedClientsAddRouteImport
+    '/_authenticated/documents': {
+      id: '/_authenticated/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof AuthenticatedDocumentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/clients/$id': {
-      id: '/_authenticated/clients/$id'
-      path: '/clients/$id'
-      fullPath: '/clients/$id'
-      preLoaderRoute: typeof AuthenticatedClientsIdRouteImport
+    '/_authenticated/classes': {
+      id: '/_authenticated/classes'
+      path: '/classes'
+      fullPath: '/classes'
+      preLoaderRoute: typeof AuthenticatedClassesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/attendance': {
+      id: '/_authenticated/attendance'
+      path: '/attendance'
+      fullPath: '/attendance'
+      preLoaderRoute: typeof AuthenticatedAttendanceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/students/': {
+      id: '/_authenticated/students/'
+      path: '/students'
+      fullPath: '/students/'
+      preLoaderRoute: typeof AuthenticatedStudentsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/students/add': {
+      id: '/_authenticated/students/add'
+      path: '/students/add'
+      fullPath: '/students/add'
+      preLoaderRoute: typeof AuthenticatedStudentsAddRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedCalculatorRoute: typeof AuthenticatedCalculatorRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
+  AuthenticatedClassesRoute: typeof AuthenticatedClassesRoute
+  AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
+  AuthenticatedFeesRoute: typeof AuthenticatedFeesRoute
+  AuthenticatedLecturerAttendanceRoute: typeof AuthenticatedLecturerAttendanceRoute
+  AuthenticatedLecturersRoute: typeof AuthenticatedLecturersRoute
+  AuthenticatedMarksRoute: typeof AuthenticatedMarksRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
-  AuthenticatedClientsIdRoute: typeof AuthenticatedClientsIdRoute
-  AuthenticatedClientsAddRoute: typeof AuthenticatedClientsAddRoute
-  AuthenticatedWorkersAddRoute: typeof AuthenticatedWorkersAddRoute
-  AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
+  AuthenticatedStudentsAddRoute: typeof AuthenticatedStudentsAddRoute
+  AuthenticatedStudentsIndexRoute: typeof AuthenticatedStudentsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedCalculatorRoute: AuthenticatedCalculatorRoute,
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
+  AuthenticatedClassesRoute: AuthenticatedClassesRoute,
+  AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
+  AuthenticatedFeesRoute: AuthenticatedFeesRoute,
+  AuthenticatedLecturerAttendanceRoute: AuthenticatedLecturerAttendanceRoute,
+  AuthenticatedLecturersRoute: AuthenticatedLecturersRoute,
+  AuthenticatedMarksRoute: AuthenticatedMarksRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
-  AuthenticatedClientsIdRoute: AuthenticatedClientsIdRoute,
-  AuthenticatedClientsAddRoute: AuthenticatedClientsAddRoute,
-  AuthenticatedWorkersAddRoute: AuthenticatedWorkersAddRoute,
-  AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
+  AuthenticatedStudentsAddRoute: AuthenticatedStudentsAddRoute,
+  AuthenticatedStudentsIndexRoute: AuthenticatedStudentsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

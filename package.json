@@ -14,7 +14,7 @@
     "cap:sync": "cap sync android",
     "cap:assets": "capacitor-assets generate --android --assetPath resources",
     "android:icons": "bash scripts/apply-android-resources.sh",
-    "android:build": "vite build && cap sync android && cap open android"
+    "android:build": "vite build && copy dist\\client\\_shell.html dist\\client\\index.html && cap sync android && cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.0",
@@ -64,6 +64,7 @@
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.575.0",
+    "pg": "^8.21.0",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.0",
