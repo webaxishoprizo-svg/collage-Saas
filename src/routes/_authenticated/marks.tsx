@@ -32,7 +32,8 @@ function MarksPage() {
 
 function TeacherMarks({ db, user }: { db: LMS_DB; user: AuthUser }) {
   const [studentId, setStudentId] = useState("");
-  const [selectedClassId, setSelectedClassId] = useState("");
+  const [selectedClassName, setSelectedClassName] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [score, setScore] = useState("");
   const [maxScore, setMaxScore] = useState("100");
   const [busy, setBusy] = useState(false);
@@ -47,24 +48,37 @@ function TeacherMarks({ db, user }: { db: LMS_DB; user: AuthUser }) {
     return db.classes.filter(c => assignedIds.includes(c.id));
   }, [isSuperAdmin, db.classes, currentLecturer]);
 
-  // Auto-select class if only one is assigned
+  const uniqueClassNames = useMemo(() => {
+    return Array.from(new Set(availableClasses.map(c => c.name).filter(Boolean)));
+  }, [availableClasses]);
+
+  // Auto-select class if only one
   useEffect(() => {
-    if (availableClasses.length === 1 && selectedClassId !== availableClasses[0].id) {
-      setSelectedClassId(availableClasses[0].id);
+    if (uniqueClassNames.length === 1 && selectedClassName !== uniqueClassNames[0]) {
+      setSelectedClassName(uniqueClassNames[0]);
     }
-  }, [availableClasses, selectedClassId]);
+  }, [uniqueClassNames, selectedClassName]);
+
+  const availableSubjects = useMemo(() => {
+    if (!selectedClassName) return [];
+    return availableClasses.filter(c => c.name === selectedClassName).map(c => c.subject);
+  }, [availableClasses, selectedClassName]);
+
+  // Auto-select subject if only one
+  useEffect(() => {
+    if (availableSubjects.length === 1 && selectedSubject !== availableSubjects[0]) {
+      setSelectedSubject(availableSubjects[0]);
+    } else if (availableSubjects.length > 0 && !availableSubjects.includes(selectedSubject)) {
+      setSelectedSubject("");
+    }
+  }, [availableSubjects, selectedSubject]);
 
   const filteredStudents = useMemo(() => {
     return db.students.filter(stu => {
-      if (!selectedClassId) return false; // Require a class to be selected
-      return stu.classIds && stu.classIds.includes(selectedClassId);
+      if (!selectedClassName) return false; // Require a class to be selected
+      return stu.classIds && stu.classIds.some(id => db.classes.find(c => c.id === id)?.name === selectedClassName);
     });
-  }, [db.students, selectedClassId]);
-
-  // Get the subject from the selected class
-  const selectedSubject = useMemo(() => {
-    return db.classes.find(c => c.id === selectedClassId)?.subject || "";
-  }, [db.classes, selectedClassId]);
+  }, [db.students, selectedClassName, db.classes]);
 
   async function handleAddMarks(e: React.FormEvent) {
     e.preventDefault();
@@ -72,8 +86,8 @@ function TeacherMarks({ db, user }: { db: LMS_DB; user: AuthUser }) {
     const scoreNum = Number(score);
     const maxNum = Number(maxScore);
 
-    if (!studentId || !selectedClassId || !cleanSubject || isNaN(scoreNum) || isNaN(maxNum)) {
-      toast.error("Please provide valid student, class, and scores.");
+    if (!studentId || !selectedClassName || !cleanSubject || isNaN(scoreNum) || isNaN(maxNum)) {
+      toast.error("Please provide valid student, class, subject, and scores.");
       return;
     }
 
@@ -180,38 +194,61 @@ function TeacherMarks({ db, user }: { db: LMS_DB; user: AuthUser }) {
         <form onSubmit={handleAddMarks} className="space-y-3">
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">Select Class</label>
-            {availableClasses.length === 1 ? (
-              <div className="w-full border border-gray-100 bg-gray-50 text-gray-500 rounded-lg px-3 py-2.5 text-xs font-medium">
-                {availableClasses[0].name} ({availableClasses[0].subject})
+            {uniqueClassNames.length === 1 ? (
+              <div className="w-full border border-gray-100 bg-gray-50 text-gray-500 rounded-lg px-3 py-2.5 text-xs font-medium mb-3">
+                {uniqueClassNames[0]}
               </div>
             ) : (
               <select
                 required
-                value={selectedClassId}
+                value={selectedClassName}
                 onChange={(e) => {
-                  setSelectedClassId(e.target.value);
+                  setSelectedClassName(e.target.value);
                   setStudentId("");
                 }}
                 className="w-full border border-[#e5e7eb] rounded-lg px-3 py-2.5 text-xs bg-white focus:outline-none mb-3"
               >
                 <option value="">-- Choose Class --</option>
-                {availableClasses.map(c => (
-                  <option key={c.id} value={c.id}>{c.name} ({c.subject})</option>
+                {uniqueClassNames.map(name => (
+                  <option key={name} value={name}>{name}</option>
                 ))}
               </select>
             )}
           </div>
+
+          {selectedClassName && availableSubjects.length > 0 && (
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Select Subject</label>
+              {availableSubjects.length === 1 ? (
+                <div className="w-full border border-gray-100 bg-gray-50 text-gray-500 rounded-lg px-3 py-2.5 text-xs font-medium mb-3">
+                  {availableSubjects[0]}
+                </div>
+              ) : (
+                <select
+                  required
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                  className="w-full border border-[#e5e7eb] rounded-lg px-3 py-2.5 text-xs bg-white focus:outline-none mb-3"
+                >
+                  <option value="">-- Choose Subject --</option>
+                  {availableSubjects.map(sub => (
+                    <option key={sub} value={sub}>{sub}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">Select Student</label>
             <select
               value={studentId}
               required
-              disabled={!selectedClassId}
+              disabled={!selectedClassName || !selectedSubject}
               onChange={(e) => setStudentId(e.target.value)}
               className="w-full border border-[#e5e7eb] rounded-lg px-3 py-2.5 text-xs bg-white focus:outline-none disabled:opacity-50"
             >
-              <option value="">{selectedClassId ? "-- Choose Student --" : "-- Select a Class First --"}</option>
+              <option value="">{selectedClassName && selectedSubject ? "-- Choose Student --" : "-- Select Class & Subject First --"}</option>
               {filteredStudents.map((stu: LocalStudent) => {
                 return (
                   <option key={stu.id} value={stu.id}>
