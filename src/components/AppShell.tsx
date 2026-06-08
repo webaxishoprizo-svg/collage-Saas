@@ -106,36 +106,61 @@ export function AppShell({
             </svg>
           </Link>
         ) : null}
-        <h1 className="text-base font-bold tracking-tight flex-1 truncate text-[#111827]">
+        <h1 className="text-base font-bold tracking-tight flex-1 md:flex-none md:w-64 truncate text-[#111827]">
           {title}
         </h1>
-        {action}
-        {user && (
-          <div className="relative">
+
+        {/* Desktop Navigation */}
+        {!hideNav && (
+          <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
+            {tabs.map((t) => {
+              const active = t.to === "/" ? pathname === "/" : pathname.startsWith(t.to);
+              const Icon = t.icon;
+              return (
+                <Link
+                  key={t.to}
+                  to={t.to}
+                  className={`flex items-center gap-2 text-sm font-bold transition-colors ${
+                    active ? "text-[#2563eb]" : "text-gray-500 hover:text-[#111827]"
+                  }`}
+                >
+                  <Icon className={`h-4.5 w-4.5 ${active ? "stroke-[2.4]" : "stroke-[1.8]"}`} />
+                  {t.label}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+
+        <div className="flex items-center justify-end gap-3 md:w-64">
+          {action}
+          {user && (
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(true)}
+                className="relative p-1.5 rounded-lg border border-[#e5e7eb] hover:bg-gray-50 text-gray-700 transition"
+                title="Notifications"
+              >
+                <Bell className="h-4.5 w-4.5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border-2 border-white">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
+          {(showSignOut || user) && (
             <button
-              onClick={() => setShowNotifications(true)}
-              className="relative p-1.5 rounded-lg border border-[#e5e7eb] hover:bg-gray-50 text-gray-700 transition"
-              title="Notifications"
+              onClick={onSignOut}
+              aria-label="Sign out"
+              className="p-1.5 rounded-lg border border-[#e5e7eb] hover:bg-red-50 text-red-500 transition ml-1"
+              title="Sign out"
             >
-              <Bell className="h-4.5 w-4.5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border-2 border-white">
-                  {unreadCount}
-                </span>
-              )}
+              <LogOut className="h-4.5 w-4.5" />
             </button>
-          </div>
-        )}
-        {(showSignOut || user) && (
-          <button
-            onClick={onSignOut}
-            aria-label="Sign out"
-            className="p-1.5 rounded-lg border border-[#e5e7eb] hover:bg-red-50 text-red-500 transition ml-1"
-            title="Sign out"
-          >
-            <LogOut className="h-4.5 w-4.5" />
-          </button>
-        )}
+          )}
+        </div>
       </header>
 
       {/* Notifications Slide-over Drawer */}
@@ -205,7 +230,9 @@ export function AppShell({
       )}
 
       {/* Main Page Content */}
-      <main className={`flex-1 px-4 py-5 ${hideNav ? "pb-6" : "pb-24"}`}>{children}</main>
+      <main className={`flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 md:py-8 ${hideNav ? "pb-6" : "pb-24 md:pb-8"}`}>
+        {children}
+      </main>
 
       {/* More Menu sliding bottom drawer for Teacher */}
       {user?.role === "teacher" && showMoreMenu && (
@@ -262,9 +289,9 @@ export function AppShell({
         </div>
       )}
 
-      {/* Tab Navigation Bar */}
+      {/* Tab Navigation Bar (Mobile Only) */}
       {!hideNav && (
-        <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-[#e5e7eb] px-4 md:px-12 py-2 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-[#e5e7eb] px-4 py-2 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <ul className={`grid ${user?.role === "teacher" ? "grid-cols-5" : "grid-cols-5"}`}>
             {tabs.map((t) => {
               const active = t.to === "/" ? pathname === "/" : pathname.startsWith(t.to);
