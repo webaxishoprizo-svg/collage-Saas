@@ -88,7 +88,7 @@ export function AppShell({
       : studentTabs;
 
   return (
-    <div className="min-h-screen bg-white text-[#111827] flex flex-col mx-auto max-w-[480px] border-x border-[#e5e7eb] relative shadow-md">
+    <div className="min-h-screen bg-white text-[#111827] flex flex-col mx-auto w-full relative">
       {/* App Header */}
       <header className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-[#e5e7eb] px-4 py-3 flex items-center gap-3">
         {leftAction}
@@ -264,7 +264,7 @@ export function AppShell({
 
       {/* Tab Navigation Bar */}
       {!hideNav && (
-        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-[#e5e7eb] px-2 py-1.5 z-30">
+        <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-[#e5e7eb] px-4 md:px-12 py-2 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <ul className={`grid ${user?.role === "teacher" ? "grid-cols-5" : "grid-cols-5"}`}>
             {tabs.map((t) => {
               const active = t.to === "/" ? pathname === "/" : pathname.startsWith(t.to);

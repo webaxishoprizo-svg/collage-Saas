@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && node -e \"fs.copyFileSync('dist/client/_shell.html', 'dist/client/index.html')\"",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -14,7 +14,7 @@
     "cap:sync": "cap sync android",
     "cap:assets": "capacitor-assets generate --android --assetPath resources",
     "android:icons": "bash scripts/apply-android-resources.sh",
-    "android:build": "vite build && copy dist\\client\\_shell.html dist\\client\\index.html && cap sync android && cap open android"
+    "android:build": "vite build && node -e \"fs.copyFileSync('dist/client/_shell.html', 'dist/client/index.html')\" && cap sync android && cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.0",
