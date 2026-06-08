@@ -139,10 +139,7 @@ function StudentsManagement() {
                         Classes:{" "}
                         <span className="text-gray-800">
                           {stu.classIds && stu.classIds.length > 0
-                            ? stu.classIds
-                                .map((id) => db.classes.find((c) => c.id === id)?.name)
-                                .filter(Boolean)
-                                .join(", ")
+                            ? Array.from(new Set(stu.classIds.map((id) => db.classes.find((c) => c.id === id)?.name).filter(Boolean))).join(", ")
                             : "Unassigned"}
                         </span>
                       </p>

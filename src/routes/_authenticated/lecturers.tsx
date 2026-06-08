@@ -216,7 +216,7 @@ function LecturersManagement() {
                     {lec.classIds && lec.classIds.length > 0 && (
                       <p className="text-xs text-gray-500 mt-1">
                         Classes: <span className="font-semibold text-gray-700">
-                          {lec.classIds.map(id => db.classes.find(c => c.id === id)?.name).filter(Boolean).join(", ")}
+                          {Array.from(new Set(lec.classIds.map(id => db.classes.find(c => c.id === id)?.name).filter(Boolean))).join(", ")}
                         </span>
                       </p>
                     )}
